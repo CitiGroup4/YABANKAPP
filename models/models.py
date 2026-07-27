@@ -1,5 +1,6 @@
 # import pydantic
-from pydantic import BaseModel
+from typing import Optional
+from pydantic import BaseModel, Field
 import datetime
 from decimal import Decimal
 
@@ -10,10 +11,10 @@ email VARCHAR(100) UNIQUE,
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 """
 class Users(BaseModel):
-    user_id: int
-    name: str
-    email: str
-    created_at: datetime.datetime # Datetime type
+    user_id: int = Field(default_factory=()) # FOR DATABASE ONLY.
+    name: str = Field(max_length=100)
+    email: str = Field(max_length=100)
+    created_at: datetime.date = Field(default_factory=datetime.date.today) # Datetime type
     pass
 
 """
@@ -26,7 +27,7 @@ CREATE TABLE accounts (
 class Accounts(BaseModel):
     user_id: int
     balance: Decimal # should be decimal, fix this for precision
-    account_type: str
+    account_type: str = Field(max_length=50)
     created_at: datetime.datetime # Datetime type
     pass
 
@@ -41,7 +42,7 @@ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  FOREIGN KEY (account_id) REFERE
 class Transactions(BaseModel):
     txn_id: int
     account_id: int
-    txn_type: str
+    txn_type: str = Field(max_length=20)
     amount: Decimal # should be decimal, fix this for precision
     created_at: datetime.datetime # Datetime type
     pass

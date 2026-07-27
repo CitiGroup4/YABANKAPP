@@ -1,5 +1,10 @@
 import uvicorn
 from fastapi import FastAPI
+import csv
+from datetime import datetime
+from services import account_service
+from models import models
+
 
 app = FastAPI()
 
@@ -9,17 +14,20 @@ def read_root():
 
 # Create Account
 @app.post("/api/accounts")
-def create_account():
+def create_account(account: models.Accounts):
     # call account creation function here
+    print("calling create account service")
+    new_account = account_service.create_account(account)
     return {
-        "message": "Account created"
+        "message": "Account created",
+        "account": new_account
     }
-
 
 # Get Account Details
 @app.get("/api/accounts/{id}")
 def get_account(id: int):
     # call get account function here
+    #call a service
     return {
         "account_id": id
     }

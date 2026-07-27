@@ -25,7 +25,7 @@ CREATE TABLE accounts (
  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  FOREIGN KEY (user_id) REFERENCES users(user_id) ); 
 """
 class Accounts(BaseModel):
-    account_id: int
+    user_id: int
     balance: Decimal # should be decimal, fix this for precision
     account_type: str = Field(max_length=50)
     created_at: datetime.datetime # Datetime type

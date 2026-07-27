@@ -1,0 +1,40 @@
+from repositories import account_repository
+from datetime import datetime
+
+
+def create_account(account):
+
+    accounts = account_repository.get_all_accounts()
+
+
+    # Generate new account ID
+    ids = [
+        int(a["account_id"])
+        for a in accounts
+        if a["account_id"]
+    ]
+
+
+    if ids:
+        new_id = max(ids) + 1
+    else:
+        new_id = 101
+
+
+    # Generate creation date
+    created_date = datetime.now().strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+
+
+    account_data = {
+        "account_id": new_id,
+        "user_id": account.user_id,
+        "balance": account.balance,
+        "account_type": account.account_type,
+        "created_at": created_date
+    }
+    print(f"\nAccount created with ID: {new_id}")
+
+    return account_repository.save_account(account_data)
+

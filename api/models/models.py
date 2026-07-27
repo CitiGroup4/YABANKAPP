@@ -1,4 +1,5 @@
 # import pydantic
+from typing import Optional
 from pydantic import BaseModel, Field
 import datetime
 from decimal import Decimal
@@ -10,10 +11,10 @@ email VARCHAR(100) UNIQUE,
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 """
 class Users(BaseModel):
-    user_id: int
+    user_id: int = Field(default_factory=()) # FOR DATABASE ONLY.
     name: str = Field(max_length=100)
     email: str = Field(max_length=100)
-    created_at: datetime.datetime # Datetime type
+    created_at: datetime.date = Field(default_factory=datetime.date.today) # Datetime type
     pass
 
 """

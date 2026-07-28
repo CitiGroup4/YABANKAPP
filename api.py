@@ -26,7 +26,7 @@ def create_account(account: models.Accounts):
 # Get Account Details
 @app.get("/api/accounts/{account_id}")
 def get_account(account_id: int):
-    found_account = account_service.find_account(account_id)
+    found_account = account_service.find_account_from_id(account_id)
 
     if found_account is None:
         raise HTTPException(
@@ -61,9 +61,14 @@ def withdraw_money(id: int):
 @app.get("/api/accounts/{id}/transactions")
 def get_transactions(id: int):
     # call transaction history function here
+
+    # Get the account, then find transactions associated with this account.
+    # found_account = account_service.find_account_from_id(id)
+    transaction_list = account_service.find_transactions(id)
+
     return {
         "account_id": id,
-        "transactions": []
+        "transactions": transaction_list
     }
 
 if __name__ == "__main__":

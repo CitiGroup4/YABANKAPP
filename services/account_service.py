@@ -38,6 +38,20 @@ def create_account(account):
 
     return account_repository.save_account(account_data)
 
+
+# Find an account based on ID.
+# Possible refactor: find account based on dict key and value.
+def find_account_from_id(id):
+    accounts = account_repository.get_all_accounts()
+
+    # Find first instance of this account id in the list using comprehension
+    found_account = next((x for x in accounts if x['account_id'] == str(id)), None)
+
+    if not found_account:
+        return None
+
+    return found_account
+
 # Find an account based on ID.
 # Possible refactor: find account based on dict key and value.
 def find_account(account_id: int):
@@ -56,3 +70,11 @@ def find_account(account_id: int):
         "balance": float(account["balance"])
     }
 
+def find_transactions(account_id: int):
+    # We should have an account ID by now. Use that, ask R/W layer to find latest transactions for this user.
+    transactions = account_repository.get_all_transactions()
+
+    # List comprehension to get ALL transactions that match this ID.
+    found_transactions = [x for x in transactions if x['account_id'] == str(account_id)]
+
+    return found_transactions

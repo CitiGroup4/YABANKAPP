@@ -1,8 +1,9 @@
 import csv
 
 
-FILE_PATH = "database/accounts.csv"
+ACCOUNTS_FILE_PATH = "database/accounts.csv"
 USERS_FILE_PATH = "database/users.csv"
+TRANSACTIONS_FILE_PATH = "database/transactions.csv"
 
 
 
@@ -10,7 +11,7 @@ def get_all_accounts():
 
     accounts = []
 
-    with open(FILE_PATH, "r") as file:
+    with open(ACCOUNTS_FILE_PATH, "r") as file:
 
         reader = csv.DictReader(file)
 
@@ -23,7 +24,7 @@ def get_all_accounts():
 
 def save_account(account):
 
-    with open(FILE_PATH, "a", newline="") as file:
+    with open(ACCOUNTS_FILE_PATH, "a", newline="") as file:
 
         writer = csv.DictWriter(
             file,
@@ -40,3 +41,17 @@ def save_account(account):
 
 
     return account
+
+
+def get_all_transactions():
+
+    transactions = []
+
+    with open(TRANSACTIONS_FILE_PATH, "r") as file:
+
+        reader = csv.DictReader(file)
+
+        for row in reader:
+            transactions.append(row)
+
+    return transactions

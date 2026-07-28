@@ -1,0 +1,24 @@
+from pymongo import MongoClient
+from pymongo.server_api import ServerApi
+import os
+from pathlib import Path
+from environ import ImproperlyConfigured
+import environ # For reading environment variables
+
+# Set up .env
+BASE_DIR = Path(__file__).resolve().parent
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# Set this to what the env file is
+uri = env("MONGODB_URI")
+# Create a new client and connect to the server
+client = MongoClient(uri, server_api=ServerApi('1'))
+# Send a ping to confirm a successful connection
+try:
+    client.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+except Exception as e:
+    print(e)

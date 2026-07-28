@@ -26,9 +26,9 @@ CREATE TABLE accounts (
 """
 class Accounts(BaseModel):
     user_id: int
-    balance: Decimal # should be decimal, fix this for precision
+    balance: Decimal = Field(default=0) # should be decimal, fix this for precision
     account_type: str = Field(max_length=50)
-    created_at: datetime.datetime # Datetime type
+    created_at: datetime.date = Field(default_factory=datetime.date.today) # Datetime type
     pass
 
 """
@@ -44,5 +44,5 @@ class Transactions(BaseModel):
     account_id: int
     txn_type: str = Field(max_length=20)
     amount: Decimal # should be decimal, fix this for precision
-    created_at: datetime.datetime # Datetime type
+    created_at: datetime.date = Field(default_factory=datetime.date.today) # Datetime type
     pass

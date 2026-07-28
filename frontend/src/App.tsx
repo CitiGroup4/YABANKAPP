@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Home from "./pages/Home";
-import CreateAccount from "./pages/CreateAccount";
-import AccountDetails from "./pages/AccountDetails";
+import Home from "./pages/Home.tsx";
+import CreateAccount from "./pages/CreateAccount.tsx";
+import AccountDetails from "./pages/AccountDetails.tsx";
 
 
 function App() {

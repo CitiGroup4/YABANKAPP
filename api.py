@@ -6,6 +6,8 @@ from services import account_service, transaction_service
 from models import models
 from decimal import Decimal
 
+from database.mongodb import client, close_database
+
 
 
 
@@ -24,6 +26,18 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
+@app.on_event("startup")
+def startup():
+    try:
+        client.admin.command("ping")
+        print("MongoDB connected")
+    except Exception as e:
+        print(e)
+
+@app.on_event("shutdown")
+def shutdown_event():
+    close_database()
 
 # ---------------------------------------------------------
 # Root Endpoint

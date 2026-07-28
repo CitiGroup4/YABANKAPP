@@ -55,3 +55,27 @@ def get_all_transactions():
             transactions.append(row)
 
     return transactions
+
+def update_transaction(account_id, new_amount):
+    rows = []
+
+    with open(ACCOUNTS_FILE_PATH, "r", newline="") as file:
+        reader = csv.DictReader(file)
+        fieldnames = reader.fieldnames
+
+        for row in reader:
+            if row["account_id"] == str(account_id):
+                row["balance"] = str(new_amount)
+
+            rows.append(row)
+
+    with open(ACCOUNTS_FILE_PATH, "w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    return True
+
+    
+    
+    

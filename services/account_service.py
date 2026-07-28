@@ -1,5 +1,6 @@
 from repositories import account_repository
 from datetime import datetime
+from decimal import Decimal
 
 
 def create_account(account):
@@ -78,3 +79,24 @@ def find_transactions(account_id: int):
     found_transactions = [x for x in transactions if x['account_id'] == str(account_id)]
 
     return found_transactions
+
+def update_balance(account_id: int, amount: float, deposit: bool = True):
+    # Get the account first
+    account = find_account_from_id(account_id)
+
+    if not account:
+        return 0
+
+    current_balance = Decimal(account["balance"])
+
+    if deposit:
+        new_balance = current_balance + amount
+    else:
+        new_balance = current_balance - amount
+        if new_balance < 0:
+            return -1  # Insufficient funds
+
+    # Update the account balance in the repository
+    updated_account = account_repository.update_transaction(account_id, new_balance)
+
+    return 1

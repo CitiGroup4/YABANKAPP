@@ -4,6 +4,9 @@ import csv
 from datetime import datetime
 from services import account_service
 from models import models
+from decimal import Decimal
+
+
 
 
 app = FastAPI()
@@ -39,8 +42,14 @@ def get_account(account_id: int):
 
 # Deposit Money
 @app.post("/api/accounts/{id}/deposit")
-def deposit_money(id: int):
+def deposit_money( amount: Decimal):
     # call deposit function here
+    success =account_service.update_account_balance(id, amount,deposit=True)
+    if success == 0:
+        return {
+            "account_id": id,
+            "message": "Account not found"
+        }
     return {
         "account_id": id,
         "message": "Deposit successful"
@@ -49,8 +58,19 @@ def deposit_money(id: int):
 
 # Withdraw Money
 @app.post("/api/accounts/{id}/withdraw")
-def withdraw_money(id: int):
+def withdraw_money( amount: Decimal):
     # call withdraw function here
+    success = account_service.update_account_balance(id, amount,deposit=False)
+    if success == -1:
+        return {
+            "account_id": id,
+            "message": "Insufficient funds for withdrawal"
+        }
+    elif success == 0:
+        return {
+            "account_id": id,
+            "message": "Account not found"
+        }
     return {
         "account_id": id,
         "message": "Withdrawal successful"

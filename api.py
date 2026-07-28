@@ -137,6 +137,7 @@ def get_account(account_id: int):
 def deposit_money(account_request: models.AccountMoneyRequest):
     # call deposit function here
     success = account_service.update_balance(account_id=account_request.account_id, amount=account_request.amount, deposit=True)
+    transaction_service.create_transaction(account_request.account_id, account_request.amount)
     if success == 0:
         return {
             "account_id": account_request.account_id,
@@ -162,9 +163,10 @@ def deposit_money(account_request: models.AccountMoneyRequest):
 @app.post("/api/accounts/{id}/withdraw")
 def withdraw_money(account_request: models.AccountMoneyRequest):
     # call withdraw function here
-
     success = account_service.update_balance(account_id=account_request.account_id, amount=account_request.amount, deposit=False)
 
+    # NOTE: amount is negative here.
+    transaction_service.create_transaction(account_request.account_id, Decimal(-account_request.amount))
     if success == -1:
         return {
             "account_id": account_request.account_id,

@@ -103,7 +103,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n    \"amount\": 500\r\n}",
+          "raw": "{\r\n    \"account_id\": 101,\r\n    \"amount\": 500\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -149,7 +149,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n    \"amount\": 200\r\n}",
+          "raw": "{\r\n    \"account_id\": 101,\r\n    \"amount\": 200\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -157,7 +157,7 @@
           }
         },
         "url": {
-          "raw": "http://0.0.0.0:8000/api/accounts/101/deposit",
+          "raw": "http://0.0.0.0:8000/api/accounts/101/withdraw",
           "protocol": "http",
           "host": [
             "0",
@@ -170,7 +170,7 @@
             "api",
             "accounts",
             "101",
-            "deposit"
+            "withdraw"
           ],
           "query": [
             {

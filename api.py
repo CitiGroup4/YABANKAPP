@@ -54,37 +54,39 @@ def get_account(account_id: int):
 
 # Deposit Money
 @app.post("/api/accounts/{id}/deposit")
-def deposit_money( amount: Decimal):
+def deposit_money(account_request: models.AccountMoneyRequest):
     # call deposit function here
-    success =account_service.update_balance(id, amount,deposit=True)
+    success = account_service.update_balance(account_id=account_request.account_id, amount=account_request.amount, deposit=True)
     if success == 0:
         return {
-            "account_id": id,
+            "account_id": account_request.account_id,
             "message": "Account not found"
         }
     return {
-        "account_id": id,
+        "account_id": account_request.account_id,
         "message": "Deposit successful"
     }
 
 
 # Withdraw Money
 @app.post("/api/accounts/{id}/withdraw")
-def withdraw_money( amount: Decimal):
+def withdraw_money(account_request: models.AccountMoneyRequest):
     # call withdraw function here
-    success = account_service.update_balance(id, amount,deposit=False)
+
+    success = account_service.update_balance(account_id=account_request.account_id, amount=account_request.amount, deposit=False)
+
     if success == -1:
         return {
-            "account_id": id,
+            "account_id": account_request.account_id,
             "message": "Insufficient funds for withdrawal"
         }
     elif success == 0:
         return {
-            "account_id": id,
+            "account_id": account_request.account_id,
             "message": "Account not found"
         }
     return {
-        "account_id": id,
+        "account_id": account_request.account_id,
         "message": "Withdrawal successful"
     }
 

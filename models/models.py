@@ -46,3 +46,16 @@ class Transactions(BaseModel):
     amount: Decimal # should be decimal, fix this for precision
     created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
     pass
+
+
+
+"""
+EXTRA BODY MODELS FOR API CALLS HERE
+"""
+
+# For withdrawal and deposits, use this model.
+# BOTH FIELDS ARE REQUIRED.
+class AccountMoneyRequest(BaseModel):
+    account_id: int # Not required in req documents, but how else will we find what account wants to do this?
+    amount: Decimal
+    pass

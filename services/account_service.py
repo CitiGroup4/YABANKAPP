@@ -1,4 +1,5 @@
 from repositories import account_repository
+from repositories import transaction_repository
 from datetime import datetime
 from decimal import Decimal
 
@@ -71,24 +72,18 @@ def find_account(account_id: int):
         "balance": float(account["balance"])
     }
 
-def find_transactions(account_id: int):
-    # We should have an account ID by now. Use that, ask R/W layer to find latest transactions for this user.
-    transactions = account_repository.get_all_transactions()
-
-    # List comprehension to get ALL transactions that match this ID.
-    found_transactions = [x for x in transactions if x['account_id'] == str(account_id)]
-
-    return found_transactions
-
-def update_balance(account_id: int, amount: Decimal, deposit: bool = True):
+def update_balance(account_id: int, amount: Decimal, deposit: bool = False, withdrawal: bool = False):
     # Get the account first
     account = find_account_from_id(account_id)
 
     if not account:
+        # Invalid account, return 0 opcode
         return 0
 
+    # Get current balance from this account
     current_balance = Decimal(account["balance"])
 
+    # Deposit adds value, withdrawal subtracts it
     if deposit:
         new_balance = current_balance + amount
     else:
@@ -97,6 +92,7 @@ def update_balance(account_id: int, amount: Decimal, deposit: bool = True):
             return -1  # Insufficient funds
 
     # Update the account balance in the repository
-    updated_account = account_repository.update_transaction(account_id, new_balance)
+    transaction_repository.update_transaction(account_id, new_balance)
 
+    # Success returns here
     return 1

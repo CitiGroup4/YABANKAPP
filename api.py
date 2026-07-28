@@ -6,8 +6,20 @@ from services import account_service
 from models import models
 
 
-app = FastAPI()
+app = FastAPI(
+    title="YA Bank API",
+    description="""
+    REST API for the YA Bank application.
 
+    Features:
+    - Create Accounts
+    - Retrieve Account Details
+    - Deposit Funds
+    - Withdraw Funds
+    - View Transaction History
+    """,
+    version="1.0.0"
+)
 @app.get("/")
 def read_root():
     return {"message": "Bank API Running"}

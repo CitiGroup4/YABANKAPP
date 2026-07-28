@@ -92,7 +92,7 @@ def update_balance(account_id: int, amount: Decimal, deposit: bool = False, with
             return -1  # Insufficient funds
 
     # Update the account balance in the repository
-    transaction_repository.update_transaction(account_id, new_balance)
+    account_repository.update_account_balance(account_id, new_balance)
 
     # Success returns here
     return 1

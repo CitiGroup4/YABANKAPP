@@ -16,25 +16,20 @@ def get_all_transactions():
 
     return transactions
 
+def update_transaction_record(new_transaction_record):
+    # Then, update transaction table with new entry.
+    with open(TRANSACTIONS_FILE_PATH, "a", newline="") as file:
+        writer = csv.DictWriter(
+            file,
+            fieldnames=[
+                "txn_id",
+                "account_id",
+                "txn_type",
+                "amount",
+                "created_at"
+            ]
+        )
 
-def update_transaction(account_id, new_amount):
-    rows = []
+        writer.writerow(new_transaction_record)
 
-    with open(ACCOUNTS_FILE_PATH, "r", newline="") as file:
-        reader = csv.DictReader(file)
-        fieldnames = reader.fieldnames
-
-        for row in reader:
-            # As long as account_id is unique, this is fine.
-            if row["account_id"] == str(account_id):
-                row["balance"] = str(new_amount)
-
-            # Every row is appended and the whole file is rewritten.
-            rows.append(row)
-
-    with open(ACCOUNTS_FILE_PATH, "w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-
-    return True
+    return new_transaction_record

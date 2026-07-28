@@ -56,7 +56,7 @@ def get_account(account_id: int):
 @app.post("/api/accounts/{id}/deposit")
 def deposit_money( amount: Decimal):
     # call deposit function here
-    success =account_service.update_account_balance(id, amount,deposit=True)
+    success =account_service.update_balance(id, amount,deposit=True)
     if success == 0:
         return {
             "account_id": id,
@@ -72,7 +72,7 @@ def deposit_money( amount: Decimal):
 @app.post("/api/accounts/{id}/withdraw")
 def withdraw_money( amount: Decimal):
     # call withdraw function here
-    success = account_service.update_account_balance(id, amount,deposit=False)
+    success = account_service.update_balance(id, amount,deposit=False)
     if success == -1:
         return {
             "account_id": id,

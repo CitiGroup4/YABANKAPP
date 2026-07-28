@@ -80,7 +80,7 @@ def find_transactions(account_id: int):
 
     return found_transactions
 
-def update_balance(account_id: int, amount: float, deposit: bool = True):
+def update_balance(account_id: int, amount: Decimal, deposit: bool = True):
     # Get the account first
     account = find_account_from_id(account_id)
 

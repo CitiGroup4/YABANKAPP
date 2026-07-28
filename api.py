@@ -23,11 +23,60 @@ app = FastAPI(
     """,
     version="1.0.0"
 )
+
+
+# ---------------------------------------------------------
+# Root Endpoint
+# ---------------------------------------------------------
+# Basic health-check endpoint.
+#
+# Purpose:
+# - Verify that the API server is running.
+# - Useful when deploying the application.
+#
+# HTTP Method:
+# GET
+#
+# URL:
+# /
+#
+# Example response:
+# {
+#     "message": "Bank API Running"
+# }
 @app.get("/")
 def read_root():
     return {"message": "Bank API Running"}
 
-# Create Account
+
+# ---------------------------------------------------------
+# Create Account Endpoint
+# ---------------------------------------------------------
+#
+# Creates a new bank account.
+#
+# HTTP Method:
+# POST
+#
+# URL:
+# /api/accounts
+#
+# Request Flow:
+#
+# 1. Client sends account information.
+# 2. FastAPI validates the request using models.Accounts.
+# 3. Endpoint calls account_service.create_account().
+# 4. Service handles account creation logic.
+# 5. Created account is returned to the client.
+#
+# Example request body:
+#
+# {
+#     "user_id": 1,
+#     "balance": 500,
+#     "account_type": "Checking"
+# }
+#
 @app.post("/api/accounts")
 def create_account(account: models.Accounts):
     # call account creation function here
@@ -38,7 +87,27 @@ def create_account(account: models.Accounts):
         "account": new_account
     }
 
-# Get Account Details
+
+
+# ---------------------------------------------------------
+# Get Account Details Endpoint
+# ---------------------------------------------------------
+#
+# Retrieves an account using its account ID.
+#
+# HTTP Method:
+# GET
+#
+# URL Example:
+# /api/accounts/1
+#
+# Request Flow:
+#
+# 1. Client sends account ID in URL.
+# 2. API calls account_service.find_account_from_id().
+# 3. Service searches for the account.
+# 4. API returns account information.
+#
 @app.get("/api/accounts/{account_id}")
 def get_account(account_id: int):
     found_account = account_service.find_account_from_id(account_id)
@@ -52,7 +121,18 @@ def get_account(account_id: int):
     return found_account
 
 
-# Deposit Money
+# ---------------------------------------------------------
+# Deposit Money Endpoint
+# ---------------------------------------------------------
+#
+# Adds money to an existing account.
+#
+# HTTP Method:
+# POST
+#
+# URL Example:
+# /api/accounts/1/deposit
+#
 @app.post("/api/accounts/{id}/deposit")
 def deposit_money(account_request: models.AccountMoneyRequest):
     # call deposit function here
@@ -68,7 +148,17 @@ def deposit_money(account_request: models.AccountMoneyRequest):
     }
 
 
-# Withdraw Money
+# ---------------------------------------------------------
+# Withdraw Money Endpoint
+# ---------------------------------------------------------
+
+# Removes money from an existing account.
+
+# HTTP Method:
+# POST
+
+# URL Example:
+# /api/accounts/1/withdraw
 @app.post("/api/accounts/{id}/withdraw")
 def withdraw_money(account_request: models.AccountMoneyRequest):
     # call withdraw function here
@@ -91,7 +181,37 @@ def withdraw_money(account_request: models.AccountMoneyRequest):
     }
 
 
-# Transaction History
+# ---------------------------------------------------------
+# Transaction History Endpoint
+# ---------------------------------------------------------
+#
+# Returns all transactions associated with an account.
+#
+# HTTP Method:
+# GET
+#
+# URL Example:
+# /api/accounts/1/transactions
+#
+# Request Flow:
+#
+# 1. Client provides account ID.
+# 2. API calls transaction_service.find_transactions().
+# 3. Service retrieves transactions.
+# 4. API returns transaction history.
+#
+# Example response:
+#
+# {
+#     "account_id": 1,
+#     "transactions": [
+#         {
+#             "type": "deposit",
+#             "amount": 500
+#         }
+#     ]
+# }
+#
 @app.get("/api/accounts/{id}/transactions")
 def get_transactions(id: int):
     # call transaction history function here
@@ -104,6 +224,6 @@ def get_transactions(id: int):
         "account_id": id,
         "transactions": transaction_list
     }
-
+#Use 8000/docs to view the API documentation.
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

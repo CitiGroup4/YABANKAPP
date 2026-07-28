@@ -27,10 +27,9 @@ def create_account(account: models.Accounts):
 @app.get("/api/accounts/{id}")
 def get_account(id: int):
     # call get account function here
-    #call a service
-    return {
-        "account_id": id
-    }
+    # call service to retrieve account entry.
+    found_account = account_service.find_account(id)
+    return found_account
 
 
 # Deposit Money

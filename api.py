@@ -232,7 +232,11 @@ def get_transactions(id: int):
 
     # Get the account, then find transactions associated with this account.
     # found_account = account_service.find_account_from_id(id)
-    transaction_list = transaction_service.find_transactions(id)
+
+    # Then, pass in the collection name and then the data you want to transfer
+    transaction_list = MongoDB.read_all_from_collection("transactions")
+
+    # transaction_list = transaction_service.find_transactions(id)
 
     return {
         "account_id": id,

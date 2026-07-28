@@ -27,7 +27,18 @@ class MongoDBObject:
         except Exception as e:
             print(e)
 
+    # Writes one to the collection
     def write_to_collection(self, collection_name, data):
         collection_retrieved = self.client[BANKAPP_DATABASE][collection_name]
         collection_retrieved.insert_one(data)
         pass
+
+    # Reads ALL options from collection
+    def read_all_from_collection(self, collection_name):
+        collection_retrieved = self.client[BANKAPP_DATABASE][collection_name]
+        cursor_obj = collection_retrieved.find({})
+
+        document_list = []
+        for document in cursor_obj:
+            document_list.append(document)
+        return document_list

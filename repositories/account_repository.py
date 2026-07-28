@@ -2,6 +2,7 @@ import csv
 
 
 FILE_PATH = "database/accounts.csv"
+USERS_FILE_PATH = "database/users.csv"
 
 
 

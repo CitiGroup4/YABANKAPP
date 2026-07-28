@@ -40,14 +40,19 @@ def create_account(account):
 
 # Find an account based on ID.
 # Possible refactor: find account based on dict key and value.
-def find_account(id):
-    accounts = account_repository.get_all_accounts()
+def find_account(account_id: int):
+    account = account_repository.get_account_by_id(account_id)
 
-    # Find first instance of this account id in the list using comprehension
-    found_account = next((x for x in accounts if x['account_id'] == str(id)), None)
-
-    if not found_account:
+    if account is None:
         return None
 
-    return found_account
+    user = account_repository.get_user_by_id(
+        int(account["user_id"])
+    )
+
+    return {
+        "accountId": int(account["account_id"]),
+        "userName": user["name"] if user else None,
+        "balance": float(account["balance"])
+    }
 

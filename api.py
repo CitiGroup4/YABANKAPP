@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import csv
 from datetime import datetime
 from services import account_service
@@ -24,11 +24,16 @@ def create_account(account: models.Accounts):
     }
 
 # Get Account Details
-@app.get("/api/accounts/{id}")
-def get_account(id: int):
-    # call get account function here
-    # call service to retrieve account entry.
-    found_account = account_service.find_account(id)
+@app.get("/api/accounts/{account_id}")
+def get_account(account_id: int):
+    found_account = account_service.find_account(account_id)
+
+    if found_account is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Account with ID {account_id} was not found"
+        )
+
     return found_account
 
 

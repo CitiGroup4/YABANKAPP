@@ -2,15 +2,27 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 import csv
 from datetime import datetime
-from services import account_service
+from services import account_service, transaction_service
 from models import models
 from decimal import Decimal
 
 
 
 
-app = FastAPI()
+app = FastAPI(
+    title="YA Bank API",
+    description="""
+    REST API for the YA Bank application.
 
+    Features:
+    - Create Accounts
+    - Retrieve Account Details
+    - Deposit Funds
+    - Withdraw Funds
+    - View Transaction History
+    """,
+    version="1.0.0"
+)
 @app.get("/")
 def read_root():
     return {"message": "Bank API Running"}
@@ -84,7 +96,7 @@ def get_transactions(id: int):
 
     # Get the account, then find transactions associated with this account.
     # found_account = account_service.find_account_from_id(id)
-    transaction_list = account_service.find_transactions(id)
+    transaction_list = transaction_service.find_transactions(id)
 
     return {
         "account_id": id,

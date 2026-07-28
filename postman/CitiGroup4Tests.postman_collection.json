@@ -1,0 +1,229 @@
+{
+  "info": {
+    "_postman_id": "13350a69-6629-4486-aaf5-67cbba306d15",
+    "name": "CitiGroup4Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "30197368"
+  },
+  "item": [
+    {
+      "name": "Make new savings account",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"user_id\": 1,\r\n    \"name\": \"This Guy\",\r\n    \"email\": \"ThatGuy@gmail.com\",\r\n    \"account_type\": \"SAVINGS\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8000/api/accounts",
+          "protocol": "http",
+          "host": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "accounts"
+          ],
+          "query": [
+            {
+              "key": "user_id",
+              "value": "1",
+              "disabled": true
+            },
+            {
+              "key": "name",
+              "value": "ThisGuy",
+              "disabled": true
+            },
+            {
+              "key": "email",
+              "value": "ThatGuy@gmail.com",
+              "disabled": true
+            },
+            {
+              "key": "created_at",
+              "value": null,
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Account Details",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://0.0.0.0:8000/api/accounts/101",
+          "protocol": "http",
+          "host": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "accounts",
+            "101"
+          ],
+          "query": [
+            {
+              "key": "email",
+              "value": "ThatGuy@gmail.com",
+              "disabled": true
+            },
+            {
+              "key": "created_at",
+              "value": null,
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Make Deposit",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"amount\": 500\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8000/api/accounts/101/deposit",
+          "protocol": "http",
+          "host": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "accounts",
+            "101",
+            "deposit"
+          ],
+          "query": [
+            {
+              "key": "email",
+              "value": "ThatGuy@gmail.com",
+              "disabled": true
+            },
+            {
+              "key": "created_at",
+              "value": null,
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Make Withdrawal",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"amount\": 200\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8000/api/accounts/101/deposit",
+          "protocol": "http",
+          "host": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "accounts",
+            "101",
+            "deposit"
+          ],
+          "query": [
+            {
+              "key": "email",
+              "value": "ThatGuy@gmail.com",
+              "disabled": true
+            },
+            {
+              "key": "created_at",
+              "value": null,
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Transactions",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://0.0.0.0:8000/api/accounts/101/transactions",
+          "protocol": "http",
+          "host": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "accounts",
+            "101",
+            "transactions"
+          ],
+          "query": [
+            {
+              "key": "email",
+              "value": "ThatGuy@gmail.com",
+              "disabled": true
+            },
+            {
+              "key": "created_at",
+              "value": null,
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

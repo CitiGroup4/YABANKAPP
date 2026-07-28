@@ -7,6 +7,7 @@ TRANSACTIONS_FILE_PATH = "database/transactions.csv"
 
 
 
+
 def get_all_accounts():
 
     accounts = []

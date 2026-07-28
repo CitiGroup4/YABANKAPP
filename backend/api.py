@@ -2,11 +2,15 @@ import uvicorn
 from fastapi import FastAPI
 import csv
 from datetime import datetime
-from backend.services import account_service
-from backend.models import models
+from services import account_service
+from models import models
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Bank Account API",
+    description="Backend API for account management",
+    version="1.0.0"
+)
 
 @app.get("/")
 def read_root():

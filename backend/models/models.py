@@ -28,7 +28,6 @@ class Accounts(BaseModel):
     user_id: int
     balance: Decimal = Field(default=0) # should be decimal, fix this for precision
     account_type: str = Field(max_length=50)
-    created_at: datetime.date = Field(default_factory=datetime.date.today) # Datetime type
     pass
 
 """

@@ -14,7 +14,7 @@ class Users(BaseModel):
     user_id: int = Field(default_factory=()) # FOR DATABASE ONLY.
     name: str = Field(max_length=100)
     email: str = Field(max_length=100)
-    created_at: datetime.date = Field(default_factory=datetime.date.today) # Datetime type
+    created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
     pass
 
 """
@@ -28,7 +28,7 @@ class Accounts(BaseModel):
     user_id: int
     balance: Decimal = Field(default=0) # should be decimal, fix this for precision
     account_type: str = Field(max_length=50)
-    created_at: datetime.date = Field(default_factory=datetime.date.today) # Datetime type
+    created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
     pass
 
 """
@@ -44,5 +44,5 @@ class Transactions(BaseModel):
     account_id: int
     txn_type: str = Field(max_length=20)
     amount: Decimal # should be decimal, fix this for precision
-    created_at: datetime.date = Field(default_factory=datetime.date.today) # Datetime type
+    created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
     pass

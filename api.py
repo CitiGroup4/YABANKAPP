@@ -2,6 +2,9 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 import csv
 from datetime import datetime
+import copy
+
+from ex.mongoEX import MongoDBObject
 from services import account_service, transaction_service
 from models import models
 from decimal import Decimal
@@ -24,6 +27,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Connect to instance on launch.
+MongoDB = MongoDBObject()
 
 # ---------------------------------------------------------
 # Root Endpoint
@@ -82,9 +87,16 @@ def create_account(account: models.Accounts):
     # call account creation function here
     print("calling create account service")
     new_account = account_service.create_account(account)
+
+    # CREATE A DEEP COPY FIRST BEFORE CALLING, as "insert_one" changes new_account.
+    return_account_data = copy.deepcopy(new_account)
+
+    # Then, pass in the collection name and then the data you want to transfer
+    MongoDB.write_to_collection("accounts", new_account)
+
     return {
         "message": "Account created",
-        "account": new_account
+        "account": return_account_data
     }
 
 

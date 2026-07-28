@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent
 env = environ.Env(
     DEBUG=(bool, False)
 )
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, 'atlas-credentials.env'))
 
 # Set this to what the env file is
 uri = env("MONGODB_URI")

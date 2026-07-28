@@ -3,7 +3,6 @@ import csv
 
 ACCOUNTS_FILE_PATH = "database/accounts.csv"
 USERS_FILE_PATH = "database/users.csv"
-TRANSACTIONS_FILE_PATH = "database/transactions.csv"
 
 
 
@@ -41,17 +40,3 @@ def save_account(account):
 
 
     return account
-
-
-def get_all_transactions():
-
-    transactions = []
-
-    with open(TRANSACTIONS_FILE_PATH, "r") as file:
-
-        reader = csv.DictReader(file)
-
-        for row in reader:
-            transactions.append(row)
-
-    return transactions

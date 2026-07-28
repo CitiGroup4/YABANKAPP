@@ -2,8 +2,8 @@ import uvicorn
 from fastapi import FastAPI
 import csv
 from datetime import datetime
-from services import account_service
-from models import models
+from backend.services import account_service
+from backend.models import models
 
 
 app = FastAPI()

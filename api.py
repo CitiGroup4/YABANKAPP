@@ -207,6 +207,8 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
         "message": "Withdrawal successful"
     }
 
+
+@app.post("/api/accounts/transfer")
 def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
     # call transfer function here
     success = account_service.transfer_funds(sender_id=sender_id, receiver_id=receiver_id, amount=amount)

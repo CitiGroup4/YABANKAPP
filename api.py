@@ -264,12 +264,11 @@ def get_transactions(id: int):
     # Then, pass in the collection name and then the data you want to transfer
     transaction_list = transaction_service.find_transactions(id)
 
-    # transaction_list = transaction_service.find_transactions(id)
-    pass
-    # return {
-    #     "account_id": id,
-    #     "transactions": transaction_list
-    # }
+    return {
+        "account_id": id,
+        "transactions": transaction_list
+    }
+
 #Use 8000/docs to view the API documentation.
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

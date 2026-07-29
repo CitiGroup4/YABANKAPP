@@ -76,4 +76,8 @@ def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
     receiver_balance = receiver_account["balance"].to_decimal() + amount
     account_repository.update_account_balance(sender_id, sender_balance)
     account_repository.update_account_balance(receiver_id, receiver_balance)
-    
+
+def close_account(account_id: int):
+    success = account_repository.delete_account(account_id)
+    if success:
+        print(f"Account {account_id} closed successfully.")

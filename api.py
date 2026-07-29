@@ -161,6 +161,13 @@ def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
         "message": "Transfer successful"
     }
 
+@app.delete("/api/accounts/{account_id}")
+def close_account(account_id:int):
+    account_service.close_account(account_id)
+    return {
+        "account_id": account_id,
+        "message": "Account closed successfully"
+    }
 # ---------------------------------------------------------
 # Transaction History Endpoint
 # ---------------------------------------------------------

@@ -1,7 +1,7 @@
-import Auth from "./pages/Auth.tsx";
+import Dashboard from './pages/Dashboard';
 
 function App() {
-  return <Auth />;
+  return <Dashboard />;
 }
 
 export default App;

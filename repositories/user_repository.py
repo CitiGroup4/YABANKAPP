@@ -17,13 +17,23 @@ def get_next_user_id():
         return user["user_id"] + 1
 
     except Exception:
-        raise HTTPException(
-            status_code=500,
-            detail="Unable to determine the next user ID."
-        )
+        print("defaulting to id 1.")
+        return 1
 
 def create_user(user):
     # Implementation for creating a new user
-
     users_collection.insert_one(user)
     return user["user_id"]
+
+def get_user_by_email(email):
+    user = users_collection.find_one(
+        {"email": email}
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found."
+        )
+
+    return user

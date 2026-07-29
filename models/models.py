@@ -11,10 +11,8 @@ email VARCHAR(100) UNIQUE,
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 """
 class Users(BaseModel):
-    user_id: int = Field(default_factory=()) # FOR DATABASE ONLY.
     name: str = Field(max_length=100)
     email: str = Field(max_length=100)
-    created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
     pass
 
 """

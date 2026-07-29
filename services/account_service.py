@@ -5,6 +5,7 @@ from decimal import Decimal
 from bson.decimal128 import Decimal128
 
 
+
 def create_account(account):
 
     new_id = account_repository.get_next_account_id()

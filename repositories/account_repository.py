@@ -1,4 +1,3 @@
-import csv
 from database.mongodb import get_database
 from bson import ObjectId
 from bson.decimal128 import Decimal128
@@ -11,6 +10,8 @@ USERS_FILE_PATH = "database/users.csv"
 
 db = get_database()
 account_collection = db["accounts"]
+
+
 
 
 def find_account_by_id(account_id: int):
@@ -51,12 +52,14 @@ def get_next_account_id():
             detail="Unable to determine the next account ID."
         )
 
+
 def save_account(account):
 
     result = account_collection.insert_one(account)
     account["_id"] = result.inserted_id
     print(f"Account created with ID: {account['_id']}")
     return account['_id']
+
 
 def update_account_balance(account_id, new_amount):
     try:

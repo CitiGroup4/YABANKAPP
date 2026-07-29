@@ -2,6 +2,9 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 import csv
 from datetime import datetime
+import copy
+
+from ex.mongoEX import MongoDBObject
 from services import account_service, transaction_service
 from models import models
 from decimal import Decimal
@@ -26,6 +29,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Connect to instance on launch.
+MongoDB = MongoDBObject()
 
 @app.on_event("startup")
 def startup():
@@ -241,7 +246,11 @@ def get_transactions(id: int):
 
     # Get the account, then find transactions associated with this account.
     # found_account = account_service.find_account_from_id(id)
-    transaction_list = transaction_service.find_transactions(id)
+
+    # Then, pass in the collection name and then the data you want to transfer
+    transaction_list = MongoDB.read_all_from_collection("transactions")
+
+    # transaction_list = transaction_service.find_transactions(id)
 
     return {
         "account_id": id,

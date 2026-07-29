@@ -126,7 +126,7 @@ def create_account(account: models.Accounts):
 #
 @app.get("/api/accounts/{account_id}")
 def get_account(account_id: int):
-    found_account = account_service.get_account(account_id)
+    found_account = account_service.get_account_serialized(account_id)
 
     if not found_account:
         raise HTTPException(
@@ -134,9 +134,7 @@ def get_account(account_id: int):
             detail=f"Account with ID {account_id} was not found"
         )
 
-    return {
-        "message": f"Account with ID {account_id} was found"
-    }
+    return found_account
 
 
 # ---------------------------------------------------------

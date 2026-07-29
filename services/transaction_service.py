@@ -9,9 +9,25 @@ def find_transactions(account_id: int):
     transactions = transaction_repository.get_all_transactions()
 
     # List comprehension to get ALL transactions that match this ID.
-    found_transactions = [x for x in transactions if x['account_id'] == str(account_id)]
+    found_transactions = [x for x in transactions if x['account_id'] == account_id]
 
-    return found_transactions
+    cleaned_transaction_list = []
+    for transaction in found_transactions:
+        # Remove '_id' section from each (this is MongoDB specific and we don't need it), return in list
+        transaction.pop("_id")
+
+        # Decimal128 does not serialize properly for JSON returns.
+        # You MUST run .to_decimal() to convert back to decimal beforehand, otherwise you cannot return this in the response.
+        transaction.update(
+            {
+                "amount": transaction.get("amount").to_decimal()
+            }
+        )
+
+        cleaned_transaction_list.append(transaction)
+
+
+    return cleaned_transaction_list
 
 
 def create_transaction(user_id, transaction_amount: Decimal):

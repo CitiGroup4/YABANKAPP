@@ -2,26 +2,12 @@ from repositories import account_repository
 from repositories import transaction_repository
 from datetime import datetime
 from decimal import Decimal
+from bson.decimal128 import Decimal128
 
 
 def create_account(account):
 
-    accounts = account_repository.get_all_accounts()
-
-
-    # Generate new account ID
-    ids = [
-        int(a["account_id"])
-        for a in accounts
-        if a["account_id"]
-    ]
-
-
-    if ids:
-        new_id = max(ids) + 1
-    else:
-        new_id = 101
-
+    new_id = account_repository.get_next_account_id()
 
     # Generate creation date
     created_date = datetime.now().strftime(
@@ -32,56 +18,28 @@ def create_account(account):
     account_data = {
         "account_id": new_id,
         "user_id": account.user_id,
-        "balance": account.balance,
+        "balance": Decimal128(str(account.balance)),
         "account_type": account.account_type,
         "created_at": created_date
     }
-    print(f"\nAccount created with ID: {new_id}")
 
     return account_repository.save_account(account_data)
 
+def get_account(account_id: int):
+    return account_repository.find_account_by_id(account_id)
 
-# Find an account based on ID.
-# Possible refactor: find account based on dict key and value.
-def find_account_from_id(id):
-    accounts = account_repository.get_all_accounts()
-
-    # Find first instance of this account id in the list using comprehension
-    found_account = next((x for x in accounts if x['account_id'] == str(id)), None)
-
-    if not found_account:
-        return None
-
-    return found_account
-
-# Find an account based on ID.
-# Possible refactor: find account based on dict key and value.
-def find_account(account_id: int):
-    account = account_repository.get_account_by_id(account_id)
-
-    if account is None:
-        return None
-
-    user = account_repository.get_user_by_id(
-        int(account["user_id"])
-    )
-
-    return {
-        "accountId": int(account["account_id"]),
-        "userName": user["name"] if user else None,
-        "balance": float(account["balance"])
-    }
 
 def update_balance(account_id: int, amount: Decimal, deposit: bool = False, withdrawal: bool = False):
+    print("Looking for account with ID: ", account_id)
     # Get the account first
-    account = find_account_from_id(account_id)
+    account = get_account(account_id)
 
     if not account:
         # Invalid account, return 0 opcode
         return 0
 
     # Get current balance from this account
-    current_balance = Decimal(account["balance"])
+    current_balance = account["balance"].to_decimal()
 
     # Deposit adds value, withdrawal subtracts it
     if deposit:

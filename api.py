@@ -4,10 +4,11 @@ import csv
 from datetime import datetime
 import copy
 
-from ex.mongoEX import MongoDBObject
 from services import account_service, transaction_service
 from models import models
 from decimal import Decimal
+
+from database.mongodb import client, close_database
 
 
 
@@ -27,8 +28,18 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Connect to instance on launch.
-MongoDB = MongoDBObject()
+
+@app.on_event("startup")
+def startup():
+    try:
+        client.admin.command("ping")
+        print("MongoDB connected")
+    except Exception as e:
+        print(e)
+
+@app.on_event("shutdown")
+def shutdown_event():
+    close_database()
 
 # ---------------------------------------------------------
 # Root Endpoint
@@ -86,17 +97,10 @@ def read_root():
 def create_account(account: models.Accounts):
     # call account creation function here
     print("calling create account service")
-    new_account = account_service.create_account(account)
-
-    # CREATE A DEEP COPY FIRST BEFORE CALLING, as "insert_one" changes new_account.
-    return_account_data = copy.deepcopy(new_account)
-
-    # Then, pass in the collection name and then the data you want to transfer
-    MongoDB.write_to_collection("accounts", new_account)
-
+    account_id = account_service.create_account(account)
     return {
         "message": "Account created",
-        "account": return_account_data
+        "account_id": str(account_id)
     }
 
 
@@ -116,21 +120,23 @@ def create_account(account: models.Accounts):
 # Request Flow:
 #
 # 1. Client sends account ID in URL.
-# 2. API calls account_service.find_account_from_id().
+# 2. API calls account_service.get_account().
 # 3. Service searches for the account.
 # 4. API returns account information.
 #
 @app.get("/api/accounts/{account_id}")
 def get_account(account_id: int):
-    found_account = account_service.find_account_from_id(account_id)
+    found_account = account_service.get_account(account_id)
 
-    if found_account is None:
+    if not found_account:
         raise HTTPException(
             status_code=404,
             detail=f"Account with ID {account_id} was not found"
         )
 
-    return found_account
+    return {
+        "message": f"Account with ID {account_id} was found"
+    }
 
 
 # ---------------------------------------------------------
@@ -146,17 +152,21 @@ def get_account(account_id: int):
 # /api/accounts/1/deposit
 #
 @app.post("/api/accounts/{id}/deposit")
-def deposit_money(account_request: models.AccountMoneyRequest):
+def deposit_money(id: int, account_request: models.AccountMoneyRequest):
+
     # call deposit function here
-    success = account_service.update_balance(account_id=account_request.account_id, amount=account_request.amount, deposit=True)
-    transaction_service.create_transaction(account_request.account_id, account_request.amount)
+    success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=True)
+
     if success == 0:
         return {
-            "account_id": account_request.account_id,
+            "account_id": id,
             "message": "Account not found"
         }
+    #TODO: implement mongodb itegration for transaction collection
+    #transaction_service.create_transaction(id, account_request.amount)
+
     return {
-        "account_id": account_request.account_id,
+        "account_id": id,
         "message": "Deposit successful"
     }
 
@@ -173,24 +183,27 @@ def deposit_money(account_request: models.AccountMoneyRequest):
 # URL Example:
 # /api/accounts/1/withdraw
 @app.post("/api/accounts/{id}/withdraw")
-def withdraw_money(account_request: models.AccountMoneyRequest):
+def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
+    print(id)
+    print(account_request)
     # call withdraw function here
-    success = account_service.update_balance(account_id=account_request.account_id, amount=account_request.amount, deposit=False)
+    success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=False)
 
     # NOTE: amount is negative here.
-    transaction_service.create_transaction(account_request.account_id, Decimal(-account_request.amount))
     if success == -1:
         return {
-            "account_id": account_request.account_id,
+            "account_id": id,
             "message": "Insufficient funds for withdrawal"
         }
     elif success == 0:
         return {
-            "account_id": account_request.account_id,
+            "account_id": id,
             "message": "Account not found"
         }
+    #TODO: implement mongodb itegration for transaction collection
+    #transaction_service.create_transaction(id, Decimal(-account_request.amount))
     return {
-        "account_id": account_request.account_id,
+        "account_id": id,
         "message": "Withdrawal successful"
     }
 

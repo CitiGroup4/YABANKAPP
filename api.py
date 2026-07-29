@@ -4,7 +4,6 @@ import csv
 from datetime import datetime
 import copy
 
-from ex.mongoEX import MongoDBObject
 from services import account_service, transaction_service
 from models import models
 from decimal import Decimal
@@ -29,8 +28,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Connect to instance on launch.
-MongoDB = MongoDBObject()
 
 @app.on_event("startup")
 def startup():

@@ -3,6 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 import datetime
 from decimal import Decimal
+from repositories.account_repository import get_next_account_id
 
 """
 user_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -11,6 +12,7 @@ email VARCHAR(100) UNIQUE,
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 """
 class Users(BaseModel):
+    #user id auto generated
     name: str = Field(max_length=100)
     email: str = Field(max_length=100)
     password: str

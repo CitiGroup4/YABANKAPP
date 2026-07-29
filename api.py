@@ -106,13 +106,14 @@ def deposit_money(id: int, account_request: models.AccountMoneyRequest):
     # call deposit function here
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=True)
 
+    # MongoDB call to create a record of this.
+    transaction_service.create_transaction(id, account_request.amount)
+
     if success == 0:
         return {
             "account_id": id,
             "message": "Account not found"
         }
-    #TODO: implement mongodb itegration for transaction collection
-    #transaction_service.create_transaction(id, account_request.amount)
 
     return {
         "account_id": id,
@@ -129,6 +130,9 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
     # call withdraw function here
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=False)
 
+    # MongoDB call to create a record of this.
+    transaction_service.create_transaction(id, -account_request.amount)
+
     # NOTE: amount is negative here.
     if success == -1:
         return {
@@ -140,15 +144,56 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
             "account_id": id,
             "message": "Account not found"
         }
-    #TODO: implement mongodb itegration for transaction collection
-    #transaction_service.create_transaction(id, Decimal(-account_request.amount))
+
     return {
         "account_id": id,
         "message": "Withdrawal successful"
     }
 
 
+@app.post("/api/accounts/transfer")
+def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
+    # call transfer function here
+    account_service.transfer_funds(sender_id=sender_id, receiver_id=receiver_id, amount=amount)
+    
+    # TODO: implement mongodb itegration for transaction collection
+    return {
+        "sender_account_id": sender_id,
+        "receiver_account_id": receiver_id, 
+        "message": "Transfer successful"
+    }
 
+# ---------------------------------------------------------
+# Transaction History Endpoint
+# ---------------------------------------------------------
+#
+# Returns all transactions associated with an account.
+#
+# HTTP Method:
+# GET
+#
+# URL Example:
+# /api/accounts/1/transactions
+#
+# Request Flow:
+#
+# 1. Client provides account ID.
+# 2. API calls transaction_service.find_transactions().
+# 3. Service retrieves transactions.
+# 4. API returns transaction history.
+#
+# Example response:
+#
+# {
+#     "account_id": 1,
+#     "transactions": [
+#         {
+#             "type": "deposit",
+#             "amount": 500
+#         }
+#     ]
+# }
+#
 @app.get("/api/accounts/{id}/transactions")
 def get_transactions(id: int):
     # call transaction history function here
@@ -157,14 +202,13 @@ def get_transactions(id: int):
     # found_account = account_service.find_account_from_id(id)
 
     # Then, pass in the collection name and then the data you want to transfer
-    #transaction_list = MongoDB.read_all_from_collection("transactions")
-
-    # transaction_list = transaction_service.find_transactions(id)
+    transaction_list = transaction_service.find_transactions(id)
 
     return {
         "account_id": id
         #"transactions": transaction_list
     }
+
 #Use 8000/docs to view the API documentation.
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

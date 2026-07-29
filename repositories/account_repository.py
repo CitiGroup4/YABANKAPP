@@ -21,7 +21,11 @@ def find_account_by_id(account_id: int):
             "account_id": account_id
         }
     )
-
+    if account is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Account with ID {account_id} was not found"
+        )
     return account
 
 def get_all_accounts():
@@ -54,7 +58,6 @@ def get_next_account_id():
 
 
 def save_account(account):
-
     result = account_collection.insert_one(account)
     account["_id"] = result.inserted_id
     print(f"Account created with ID: {account['_id']}")
@@ -62,6 +65,11 @@ def save_account(account):
 
 
 def update_account_balance(account_id, new_amount):
+    if new_amount < 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Insufficient funds in account {account_id}."
+        )
     try:
         result = account_collection.update_one(
             {"account_id": account_id},

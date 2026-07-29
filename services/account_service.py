@@ -1,5 +1,4 @@
 from repositories import account_repository
-from repositories import transaction_repository
 from datetime import datetime
 from decimal import Decimal
 from bson.decimal128 import Decimal128
@@ -35,10 +34,6 @@ def update_balance(account_id: int, amount: Decimal, deposit: bool = False, with
     # Get the account first
     account = get_account(account_id)
 
-    if not account:
-        # Invalid account, return 0 opcode
-        return 0
-
     # Get current balance from this account
     current_balance = account["balance"].to_decimal()
 
@@ -47,11 +42,21 @@ def update_balance(account_id: int, amount: Decimal, deposit: bool = False, with
         new_balance = current_balance + amount
     else:
         new_balance = current_balance - amount
-        if new_balance < 0:
-            return -1  # Insufficient funds
-
+        
     # Update the account balance in the repository
     account_repository.update_account_balance(account_id, new_balance)
 
-    # Success returns here
-    return 1
+
+def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
+
+    sender_account = get_account(sender_id)
+    receiver_account = get_account(receiver_id)
+    
+    sender_balance = sender_account["balance"].to_decimal()
+    
+    print(f"Transferring {amount} from account {sender_id} to account {receiver_id}")
+    sender_balance -= amount
+    receiver_balance = receiver_account["balance"].to_decimal() + amount
+    account_repository.update_account_balance(sender_id, sender_balance)
+    account_repository.update_account_balance(receiver_id, receiver_balance)
+    

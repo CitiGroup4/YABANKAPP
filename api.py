@@ -11,8 +11,8 @@ from decimal import Decimal
 
 from database.mongodb import client, close_database
 
-
-
+# EXAMPLE OF IN-MEMORY STORAGE FOR TOKEN.
+TOKEN_STO = []
 
 app = FastAPI(
     title="YA Bank API",
@@ -66,7 +66,7 @@ def login(user: models.LoginRequest):
 
     # JWT token generator here.
     new_token = user_service.generate_jwt(logged_in_user)
-    user_service.verify_jwt(new_token)
+    TOKEN_STO.append(new_token)
 
     return {
         "message": "Login successful",
@@ -75,6 +75,19 @@ def login(user: models.LoginRequest):
         "email": logged_in_user["email"],
         "new_token": new_token
     }
+
+# Test function for in-memory storage example
+@app.post("/api/tokentest")
+def test_token(token: models.Token):
+    # Test the token and verify
+    try:
+        if token.token in TOKEN_STO:
+            user_service.verify_jwt(token.token)
+        else:
+            raise Exception("Token not detected in the in-mem storage!")
+        return {"message": "success"}
+    except Exception as e:
+        return  {"message": e}
 
 @app.post("/api/accounts")
 def create_account(account: models.Accounts):

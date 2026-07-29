@@ -21,6 +21,9 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+class Token(BaseModel):
+    token: str
+
 """
 CREATE TABLE accounts (
 account_id INT PRIMARY KEY AUTO_INCREMENT,  user_id INT,

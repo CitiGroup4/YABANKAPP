@@ -1,21 +1,25 @@
 import React, { useRef, useState } from 'react';
 import type { Account } from '../types/bank';
 import { AccountCard } from './AccountCard';
-import { AddAccountModal } from './AddAccountModal.tsx';
+import { AddAccountModal } from './AddAccountModal';
 
 interface AccountsListProps {
   accounts: Account[];
   onAddAccount: (newAccount: Account) => void;
+  onSelectAccount: (account: Account) => void;
 }
 
-export const AccountsList: React.FC<AccountsListProps> = ({ accounts, onAddAccount }) => {
+export const AccountsList: React.FC<AccountsListProps> = ({
+  accounts,
+  onAddAccount,
+  onSelectAccount,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  // Mouse Drag to Scroll Logic
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
     setIsMouseDown(true);
@@ -23,9 +27,7 @@ export const AccountsList: React.FC<AccountsListProps> = ({ accounts, onAddAccou
     setScrollLeft(scrollRef.current.scrollLeft);
   };
 
-  const handleMouseLeaveOrUp = () => {
-    setIsMouseDown(false);
-  };
+  const handleMouseLeaveOrUp = () => setIsMouseDown(false);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isMouseDown || !scrollRef.current) return;
@@ -40,9 +42,7 @@ export const AccountsList: React.FC<AccountsListProps> = ({ accounts, onAddAccou
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-lg font-semibold text-amber-950">Accounts</h2>
-          <p className="text-xs text-amber-800/60 font-medium">
-            Drag ↔ or scroll horizontally
-          </p>
+          <p className="text-xs text-amber-800/60 font-medium">Click card to open details ↔</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -62,7 +62,7 @@ export const AccountsList: React.FC<AccountsListProps> = ({ accounts, onAddAccou
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {accounts.map((acc) => (
-          <AccountCard key={acc.account_id} account={acc} />
+          <AccountCard key={acc.account_id} account={acc} onSelectAccount={onSelectAccount} />
         ))}
       </div>
 

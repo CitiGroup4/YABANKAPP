@@ -6,8 +6,17 @@ export interface Account {
   created_at: string;
 }
 
+export interface Transaction {
+  txn_id: number;
+  account_id: number;
+  txn_type: string;
+  amount: number;
+  created_at: string;
+}
+
 export interface Card {
   id: string;
+  account_id: number;
   cardHolder: string;
   cardNumber: string;
   expiry: string;

@@ -56,7 +56,6 @@ def get_next_account_id():
         )
 
 def save_account(account):
-
     result = account_collection.insert_one(account)
     account["_id"] = result.inserted_id
     print(f"Account created with ID: {account['_id']}")

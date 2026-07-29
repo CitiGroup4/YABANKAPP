@@ -1,5 +1,4 @@
 from repositories import account_repository
-from repositories import transaction_repository
 from datetime import datetime
 from decimal import Decimal
 from bson.decimal128 import Decimal128

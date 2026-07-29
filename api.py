@@ -120,21 +120,23 @@ def create_account(account: models.Accounts):
 # Request Flow:
 #
 # 1. Client sends account ID in URL.
-# 2. API calls account_service.find_account_from_id().
+# 2. API calls account_service.get_account().
 # 3. Service searches for the account.
 # 4. API returns account information.
 #
 @app.get("/api/accounts/{account_id}")
 def get_account(account_id: int):
-    found_account = account_service.find_account_from_id(account_id)
+    found_account = account_service.get_account(account_id)
 
-    if found_account is None:
+    if not found_account:
         raise HTTPException(
             status_code=404,
             detail=f"Account with ID {account_id} was not found"
         )
 
-    return found_account
+    return {
+        "message": f"Account with ID {account_id} was found"
+    }
 
 
 # ---------------------------------------------------------

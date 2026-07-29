@@ -157,13 +157,14 @@ def deposit_money(id: int, account_request: models.AccountMoneyRequest):
     # call deposit function here
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=True)
 
+    # MongoDB call to create a record of this.
+    transaction_service.create_transaction(id, account_request.amount)
+
     if success == 0:
         return {
             "account_id": id,
             "message": "Account not found"
         }
-    #TODO: implement mongodb itegration for transaction collection
-    #transaction_service.create_transaction(id, account_request.amount)
 
     return {
         "account_id": id,
@@ -189,6 +190,9 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
     # call withdraw function here
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=False)
 
+    # MongoDB call to create a record of this.
+    transaction_service.create_transaction(id, -account_request.amount)
+
     # NOTE: amount is negative here.
     if success == -1:
         return {
@@ -200,8 +204,7 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
             "account_id": id,
             "message": "Account not found"
         }
-    #TODO: implement mongodb itegration for transaction collection
-    #transaction_service.create_transaction(id, Decimal(-account_request.amount))
+
     return {
         "account_id": id,
         "message": "Withdrawal successful"
@@ -247,7 +250,7 @@ def get_transactions(id: int):
     # found_account = account_service.find_account_from_id(id)
 
     # Then, pass in the collection name and then the data you want to transfer
-    transaction_list = MongoDB.read_all_from_collection("transactions")
+    transaction_list = transaction_service.find_transactions(id)
 
     # transaction_list = transaction_service.find_transactions(id)
 

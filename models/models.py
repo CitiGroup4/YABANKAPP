@@ -56,6 +56,5 @@ EXTRA BODY MODELS FOR API CALLS HERE
 # For withdrawal and deposits, use this model.
 # BOTH FIELDS ARE REQUIRED.
 class AccountMoneyRequest(BaseModel):
-    account_id: int # Not required in req documents, but how else will we find what account wants to do this?
     amount: Decimal
     pass

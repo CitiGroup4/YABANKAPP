@@ -1,64 +1,88 @@
 import csv
+from database.mongodb import get_database
+from bson import ObjectId
+from bson.decimal128 import Decimal128
+from fastapi import HTTPException
+
 
 ACCOUNTS_FILE_PATH = "database/accounts.csv"
 USERS_FILE_PATH = "database/users.csv"
 
-def get_all_accounts():
 
-    accounts = []
-
-    with open(ACCOUNTS_FILE_PATH, "r") as file:
-
-        reader = csv.DictReader(file)
-
-        for row in reader:
-            accounts.append(row)
-
-    return accounts
+db = get_database()
+account_collection = db["accounts"]
 
 
+def find_account_by_id(account_id: int):
 
-def save_account(account):
-
-    with open(ACCOUNTS_FILE_PATH, "a", newline="") as file:
-        writer = csv.DictWriter(
-            file,
-            fieldnames=[
-                "account_id",
-                "user_id",
-                "balance",
-                "account_type",
-                "created_at"
-            ]
-        )
-
-        writer.writerow(account)
-
+    account = account_collection.find_one(
+        {
+            "account_id": account_id
+        }
+    )
 
     return account
 
+def get_all_accounts():
+    accounts = list(account_collection.find({}))
+
+    for account in accounts:
+        account["_id"] = str(account["_id"])
+
+        if isinstance(account["balance"], Decimal128):
+            account["balance"] = str(account["balance"].to_decimal())
+
+    return accounts
+
+def get_next_account_id():
+    try:
+        account = account_collection.find_one(
+            sort=[("account_id", -1)]
+        )
+
+        if account is None:
+            return 101 # when accounts collection is empty return 101 (min for account id)
+
+        return account["account_id"] + 1
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to determine the next account ID."
+        )
+
+def save_account(account):
+
+    result = account_collection.insert_one(account)
+    account["_id"] = result.inserted_id
+    print(f"Account created with ID: {account['_id']}")
+    return account['_id']
+
 def update_account_balance(account_id, new_amount):
-    rows = []
+    try:
+        result = account_collection.update_one(
+            {"account_id": account_id},
+            {
+                "$set": {
+                    "balance": Decimal128(str(new_amount))
+                }
+            }
+        )
 
-    # First, update the account-side.
-    with open(ACCOUNTS_FILE_PATH, "r", newline="") as file:
-        reader = csv.DictReader(file)
-        fieldnames = reader.fieldnames
+        if result.matched_count == 0:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Account {account_id} not found."
+            )
 
-        for row in reader:
-            # As long as account_id is unique, this is fine.
-            if row["account_id"] == str(account_id):
-                row["balance"] = str(new_amount)
+        return result.modified_count > 0
 
-            # Every row is appended and the whole file is rewritten.
-            rows.append(row)
+    except HTTPException:
+        raise
 
-    with open(ACCOUNTS_FILE_PATH, "w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unable to update account balance: {e}"
+        )
 
-    return True
-    
-    
-    

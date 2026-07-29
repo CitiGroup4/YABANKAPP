@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 
-from core.config import settings
+from backend.core.config import settings
 
 
 client = MongoClient(

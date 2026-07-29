@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 import datetime
 from decimal import Decimal
-from repositories.account_repository import get_next_account_id
+from backend.repositories.account_repository import get_next_account_id
 
 """
 user_id INT PRIMARY KEY AUTO_INCREMENT, 

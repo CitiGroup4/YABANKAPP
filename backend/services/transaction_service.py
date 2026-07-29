@@ -1,5 +1,5 @@
-from repositories import transaction_repository
-from services import account_service
+from backend.repositories import transaction_repository
+from backend.services import account_service
 from datetime import datetime
 from decimal import Decimal
 from bson.decimal128 import Decimal128

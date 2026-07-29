@@ -211,22 +211,8 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
 @app.post("/api/accounts/transfer")
 def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
     # call transfer function here
-    success = account_service.transfer_funds(sender_id=sender_id, receiver_id=receiver_id, amount=amount)
-    if success == -1:
-        return {
-            "account_id": receiver_id,
-            "message": "Incorrect receiver account ID"
-        }
-    elif success == -2:
-        return {
-            "account_id": sender_id,
-            "message": "Incorrect sender account ID"
-        }
-    elif success == 0:
-        return {
-            "account_id": sender_id,
-            "message": "Insufficient funds for transfer"
-        }
+    account_service.transfer_funds(sender_id=sender_id, receiver_id=receiver_id, amount=amount)
+    
     # TODO: implement mongodb itegration for transaction collection
     return {
         "sender_account_id": sender_id,

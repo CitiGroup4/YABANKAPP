@@ -1,7 +1,11 @@
 from repositories import user_repository
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from security.password import hash_password, verify_password
 from fastapi import HTTPException
+
+from core.config import settings
+import jwt
+from jwt import ExpiredSignatureError
 
 def register_user(user):
     # Implementation for registering a new user
@@ -47,3 +51,36 @@ def login_user(login_request):
         )
 
     return db_user
+
+
+# Using user data, generate a jwt token and return
+def generate_jwt(user_data):
+    token_time_limit = str(datetime.now(timezone.utc) + timedelta(minutes=int(settings.EXPIRATION_TIME)))
+
+    # Create payload
+    payload_data = {
+        "name": user_data["name"],
+        "email": user_data["email"],
+        "timestamp": token_time_limit  # timestamp of current request == settings.EXPIRATION_TIME
+    }
+
+    my_secret = settings.TOKEN_SECRET
+
+    # Encode JWT, send back.
+    token = jwt.encode(
+        payload=payload_data,
+        key=my_secret
+    )
+
+    return token
+
+# Verify a token based on our secret.
+# This takes in an unverified header for now.
+def verify_jwt(token):
+    try:
+        header_data = jwt.get_unverified_header(token)
+        jwt.decode(token, key=settings.TOKEN_SECRET, algorithms=header_data['alg'])
+    except ExpiredSignatureError as e:
+        print("Error:\n"+str(e))
+        return {"result": "Cannot decode token. Something is wrong with the auth token itself."}
+    return {"result": "Token established."}

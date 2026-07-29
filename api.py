@@ -46,7 +46,7 @@ def shutdown_event():
 def read_root():
     return {"message": "Bank API Running"}
 
-@app.post("/register")
+@app.post("/api/register")
 def register(user: models.Users):
     # call register function here
     print("calling register endpoint: ", user)
@@ -59,16 +59,21 @@ def register(user: models.Users):
     }
 
 
-@app.post("/login")
+@app.post("/api/login")
 def login(user: models.LoginRequest):
 
     logged_in_user = user_service.login_user(user)
-    
+
+    # JWT token generator here.
+    new_token = user_service.generate_jwt(logged_in_user)
+    user_service.verify_jwt(new_token)
+
     return {
         "message": "Login successful",
         "user_id": logged_in_user["user_id"],
         "name": logged_in_user["name"],
-        "email": logged_in_user["email"]
+        "email": logged_in_user["email"],
+        "new_token": new_token
     }
 
 @app.post("/api/accounts")

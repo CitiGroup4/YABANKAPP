@@ -59,3 +59,4 @@ EXTRA BODY MODELS FOR API CALLS HERE
 # BOTH FIELDS ARE REQUIRED.
 class AccountMoneyRequest(BaseModel):
     amount: Decimal
+    note: Optional[str]  # Optional note field for additional information

@@ -18,7 +18,7 @@ def find_transactions(account_id: int):
     return cleaned_transaction_list
 
 
-def create_transaction(user_id, transaction_amount: Decimal):
+def create_transaction(user_id, transaction_amount: Decimal,note: str):
     user_data = account_service.get_account(user_id)
 
     # transactions = transaction_repository.get_all_transactions()
@@ -47,7 +47,9 @@ def create_transaction(user_id, transaction_amount: Decimal):
         "account_id": user_data["account_id"],
         "txn_type": user_data["account_type"],
         "amount": Decimal128(transaction_amount),
-        "created_at": created_date
+        "created_at": created_date,
+        "note": note
+
     }
     print(f"\nTransaction record created with ID: {user_id}")
 

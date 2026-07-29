@@ -87,7 +87,7 @@ def test_token(token: models.Token):
             raise Exception("Token not detected in the in-mem storage!")
         return {"message": "success"}
     except Exception as e:
-        return  {"message": e}
+        return {"message": e}
 
 @app.post("/api/accounts")
 def create_account(account: models.Accounts):

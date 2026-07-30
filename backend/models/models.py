@@ -47,7 +47,6 @@ class Transactions(BaseModel):
     account_id: int
     txn_type: str = Field(max_length=20)
     amount: Decimal # should be decimal, fix this for precision
-    description: Optional[str] = Field(max_length=200)
     created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
 
 
@@ -55,7 +54,6 @@ class Transactions(BaseModel):
 """
 EXTRA BODY MODELS FOR API CALLS HERE
 """
-
 # For withdrawal and deposits, use this model.
 # BOTH FIELDS ARE REQUIRED.
 class AccountMoneyRequest(BaseModel):

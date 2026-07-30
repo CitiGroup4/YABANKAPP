@@ -1,4 +1,4 @@
-from backend.repositories import account_repository
+from repositories import account_repository
 from datetime import datetime
 from decimal import Decimal
 from bson.decimal128 import Decimal128

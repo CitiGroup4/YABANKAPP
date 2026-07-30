@@ -1,6 +1,6 @@
 from typing import Optional
-from backend.repositories import transaction_repository
-from backend.services import account_service
+from repositories import transaction_repository
+from services import account_service
 from datetime import datetime
 from decimal import Decimal
 from bson.decimal128 import Decimal128
@@ -19,7 +19,7 @@ def find_transactions(account_id: int):
     return cleaned_transaction_list
 
 
-def create_transaction(user_id, transaction_amount: Decimal, description: Optional[str]):
+def create_transaction(user_id, transaction_amount: Decimal):
     user_data = account_service.get_account(user_id)
 
     # Generate creation date
@@ -33,7 +33,6 @@ def create_transaction(user_id, transaction_amount: Decimal, description: Option
         "account_id": user_data["account_id"],
         "txn_type": user_data["account_type"],
         "amount": Decimal128(transaction_amount),
-        "description": description,
         "created_at": created_date
     }
     print(f"\nTransaction record created with ID: {user_id}")

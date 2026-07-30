@@ -106,7 +106,7 @@ def deposit_money(id: int, account_request: models.AccountMoneyRequest):
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=True)
 
     # MongoDB call to create a record of this.
-    transaction_service.create_transaction(id, account_request.amount, account_request.description if hasattr(account_request, 'description') else None)
+    transaction_service.create_transaction(id, account_request.amount)
 
     if success == 0:
         return {

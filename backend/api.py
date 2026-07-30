@@ -1,16 +1,11 @@
-<<<<<<< HEAD:api.py
+
 from bson import Decimal128
-=======
-from services import account_service
->>>>>>> 609adb5d8c16d4bc7f3d04d90c0f5cd40e607b0a:backend/api.py
 import uvicorn
 from fastapi import FastAPI, HTTPException
 import csv
 from datetime import datetime
 import copy
-
-
-from services import account_service, transaction_service, user_service, loan_service
+from services import user_service, account_service, transaction_service, loan_service 
 from models import models
 from decimal import Decimal
 

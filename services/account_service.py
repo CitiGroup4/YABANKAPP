@@ -66,9 +66,8 @@ def update_balance(account_id: int, amount: Decimal, deposit: bool = False, with
 
 def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
 
-    sender_account = get_account(sender_id)
-    receiver_account = get_account(receiver_id)
-    
+    sender_account = get_account_serialized(sender_id)
+    receiver_account = get_account_serialized(receiver_id)
     sender_balance = sender_account["balance"].to_decimal()
     
     print(f"Transferring {amount} from account {sender_id} to account {receiver_id}")
@@ -81,3 +80,10 @@ def close_account(account_id: int):
     success = account_repository.delete_account(account_id)
     if success:
         print(f"Account {account_id} closed successfully.")
+
+def pay_loan(account_id: int, amount: Decimal):
+    account = get_account_serialized(account_id)
+    current_balance = account["balance"]
+
+    new_balance = current_balance - amount
+    account_repository.update_account_balance(account_id, new_balance)

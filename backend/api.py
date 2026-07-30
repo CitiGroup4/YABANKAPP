@@ -1,15 +1,15 @@
-from backend.services import account_service
+from services import account_service
 import uvicorn
 from fastapi import FastAPI, HTTPException
 import csv
 from datetime import datetime
 import copy
 
-from backend.services import transaction_service
-from backend.models import models
+from services import transaction_service
+from models import models
 from decimal import Decimal
 
-from backend.database.mongodb import client, close_database
+from database.mongodb import client, close_database
 
 
 
@@ -159,7 +159,7 @@ def deposit_money(id: int, account_request: models.AccountMoneyRequest):
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=True)
 
     # MongoDB call to create a record of this.
-    transaction_service.create_transaction(id, account_request.amount)
+    transaction_service.create_transaction(id, account_request.amount, account_request.description if hasattr(account_request, 'description') else None)
 
     if success == 0:
         return {

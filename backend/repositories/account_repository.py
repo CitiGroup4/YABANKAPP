@@ -1,5 +1,5 @@
 import csv
-from backend.database.mongodb import get_database
+from database.mongodb import get_database
 from bson import ObjectId
 from bson.decimal128 import Decimal128
 from fastapi import HTTPException

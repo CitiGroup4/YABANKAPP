@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 import datetime
 from decimal import Decimal
-from backend.repositories.account_repository import get_next_account_id
+from repositories.account_repository import get_next_account_id
 
 """
 user_id INT PRIMARY KEY AUTO_INCREMENT, 
@@ -45,6 +45,7 @@ class Transactions(BaseModel):
     account_id: int
     txn_type: str = Field(max_length=20)
     amount: Decimal # should be decimal, fix this for precision
+    description: Optional[str] = Field(max_length=200)
     created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
     pass
 

@@ -9,25 +9,25 @@ interface AccountCardProps {
 export const AccountCard: React.FC<AccountCardProps> = ({ account, onSelectAccount }) => {
   return (
     <div
-      onClick={() => onSelectAccount && onSelectAccount(account)}
-      className="flex-shrink-0 w-72 bg-amber-100/60 border border-amber-200/80 hover:border-amber-400 p-5 rounded-2xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer hover:-translate-y-1 group"
+      onClick={() => onSelectAccount?.(account)}
+      className="flex-shrink-0 w-80 bg-gradient-to-br from-amber-50/60 via-white to-stone-50/80 border border-amber-200/80 hover:border-amber-400 p-5 rounded-2xl transition-all duration-200 shadow-2xs hover:shadow-md cursor-pointer group select-none"
     >
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-200/60 px-2 py-0.5 rounded-md">
-            {account.account_type}
-          </span>
-          <h3 className="text-lg font-semibold text-amber-950 mt-2 group-hover:text-amber-800 transition-colors">
-            Account #{account.account_id}
-          </h3>
-        </div>
-        <span className="text-xs text-amber-800/60 group-hover:translate-x-1 transition-transform">
-          →
+      {/* Header Info */}
+      <div className="mb-4">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800 bg-amber-200/70 border border-amber-300/60 px-2 py-0.5 rounded-md inline-block">
+          {account.account_type}
         </span>
+        <h3 className="text-base font-bold text-amber-950 mt-2 group-hover:text-amber-800 transition-colors">
+          Account #{account.account_id}
+        </h3>
       </div>
-      <div className="pt-2 border-t border-amber-200/60">
-        <span className="text-xs text-amber-700/80">Available Balance</span>
-        <p className="text-2xl font-bold text-amber-950">
+
+      {/* Balance Section */}
+      <div className="pt-3 border-t border-amber-200/50">
+        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+          Available Balance
+        </span>
+        <p className="text-2xl font-black text-amber-950 tracking-tight mt-0.5">
           ${account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
         </p>
       </div>

@@ -3,16 +3,17 @@ import type { Account } from '../types/bank';
 
 export interface AddAccountModalProps {
   isOpen: boolean;
+  userId: number;
   onClose: () => void;
   onAddAccount: (newAccount: Account) => void;
 }
 
 export const AddAccountModal: React.FC<AddAccountModalProps> = ({
   isOpen,
+  userId,
   onClose,
   onAddAccount,
 }) => {
-  // Explicitly type the state so TypeScript knows it's an allowed account type
   const [accountType, setAccountType] = useState<Account['account_type']>('Checking');
   const [initialBalance, setInitialBalance] = useState('0');
 
@@ -23,9 +24,9 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
     
     const newAccount: Account = {
       account_id: Math.floor(1000 + Math.random() * 9000),
-      user_id: 1,
+      user_id: userId,
       balance: parseFloat(initialBalance) || 0,
-      account_type: accountType, // Now types match perfectly
+      account_type: accountType,
       created_at: new Date().toISOString().replace('T', ' ').substring(0, 19),
     };
 

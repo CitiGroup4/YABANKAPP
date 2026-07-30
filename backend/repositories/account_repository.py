@@ -99,3 +99,31 @@ def update_account_balance(account_id, new_amount):
             detail=f"Unable to update account balance: {e}"
         )
 
+def delete_account(account_id):
+    account  = find_account_by_id(account_id)
+    if not account:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Account {account_id} not found."
+        )
+    if account["balance"].to_decimal() != 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot delete account {account_id} with non-zero balance."
+        )
+    try:
+        result = account_collection.delete_one(
+            {"account_id": account_id}
+        )      
+
+        return True
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unable to delete account: {e}"
+        )
+

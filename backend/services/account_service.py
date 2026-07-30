@@ -4,7 +4,23 @@ from decimal import Decimal
 from bson.decimal128 import Decimal128
 from utils.backend_utils import clean_transaction_records
 
+def get_accounts_by_user(user_id: int):
+    accounts = account_repository.find_accounts_by_user(user_id)
 
+    serialized_accounts = []
+
+    for account in accounts:
+        account.pop("_id")
+
+        account.update(
+            {
+                "balance": account.get("balance").to_decimal()
+            }
+        )
+
+        serialized_accounts.append(account)
+
+    return serialized_accounts
 
 def create_account(account):
 
@@ -40,10 +56,6 @@ def get_account_serialized(account_id: int):
         }
     )
     return found_account
-
-# Cannot return this as a response (has Decimal128)
-def get_account(account_id: int):
-    return account_repository.find_account_by_id(account_id)
 
 
 def update_balance(account_id: int, amount: Decimal, deposit: bool = False, withdrawal: bool = False):

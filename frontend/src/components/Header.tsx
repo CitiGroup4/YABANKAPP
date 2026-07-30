@@ -1,23 +1,32 @@
 import React from 'react';
 
 interface HeaderProps {
-  username?: string;
+  username: string;
+  onLogout?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ username = 'Alex Morgan' }) => {
+export const Header: React.FC<HeaderProps> = ({ username, onLogout }) => {
   return (
-    <header className="flex items-center justify-between px-8 py-6 bg-amber-50/80 backdrop-blur-sm border-b border-amber-200/60 sticky top-0 z-10">
+    <header className="bg-amber-950 text-amber-50 px-6 py-4 shadow-md flex justify-between items-center">
       <div className="flex items-center space-x-3">
-        <div className="w-10 h-10 rounded-xl bg-amber-700 flex items-center justify-center text-amber-50 font-bold text-xl shadow-md">
+        <div className="w-8 h-8 bg-amber-800 text-amber-50 font-bold rounded-xl flex items-center justify-center">
           B
         </div>
-        <h1 className="text-2xl font-bold text-amber-950 tracking-tight">Bank APP</h1>
+        <span className="font-bold tracking-tight text-lg">Apex Banking</span>
       </div>
-      <div className="flex items-center space-x-3">
-        <span className="text-sm text-amber-800/80">Welcome,</span>
-        <span className="text-sm font-semibold text-amber-950 bg-amber-200/50 px-3 py-1.5 rounded-full border border-amber-300/50">
-          {username}
+
+      <div className="flex items-center space-x-4">
+        <span className="text-xs font-medium text-amber-200/80">
+          Welcome back, <strong className="text-white">{username}</strong>
         </span>
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="text-xs font-semibold bg-amber-900/80 hover:bg-amber-900 text-amber-200 px-3 py-1.5 rounded-xl border border-amber-800/60 transition-all cursor-pointer"
+          >
+            Sign Out
+          </button>
+        )}
       </div>
     </header>
   );

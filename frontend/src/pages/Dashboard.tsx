@@ -6,6 +6,12 @@ import { CardsGallery } from '../components/CardsGallery';
 import { AccountDetails } from './AccountDetails';
 import type { Account, Card, SpendingData, Transaction } from '../types/bank';
 
+// 1. Define props interface for Dashboard
+interface DashboardProps {
+  username?: string;
+  onLogout?: () => void;
+}
+
 const initialAccounts: Account[] = [
   { account_id: 101, user_id: 1, balance: 3550.0, account_type: 'Checking', created_at: '2026-07-28 18:59:44' },
   { account_id: 102, user_id: 1, balance: 4350.0, account_type: 'Checking', created_at: '2026-07-28 18:59:55' },
@@ -55,7 +61,11 @@ const mockSpending: SpendingData[] = [
   { month: 'Jun', amount: 1950 },
 ];
 
-export const Dashboard: React.FC = () => {
+// 2. Accept props in Dashboard component
+export const Dashboard: React.FC<DashboardProps> = ({
+  username = 'Alex Morgan',
+  onLogout,
+}) => {
   const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [cards, setCards] = useState<Card[]>(initialCards);
@@ -126,10 +136,9 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleIssueCard = (newCard: Card) => {
-    setCards((prev) => [...prev, newCard]);
+    setCards((prev) => [newCard, ...prev]);
   };
 
-  // Render Account Details Page
   if (selectedAccount) {
     const activeAccount = accounts.find((a) => a.account_id === selectedAccount.account_id);
     if (!activeAccount) {
@@ -154,7 +163,8 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans">
-      <Header username="Alex Morgan" />
+      {/* 3. Pass username and onLogout into Header */}
+      <Header username={username} onLogout={onLogout} />
 
       <main className="max-w-7xl mx-auto p-6 space-y-6">
         <AccountsList
@@ -169,7 +179,7 @@ export const Dashboard: React.FC = () => {
             cards={cards}
             accounts={accounts}
             onAddCard={handleIssueCard}
-          />
+        />
         </div>
       </main>
     </div>

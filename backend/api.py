@@ -1,12 +1,11 @@
-from services import account_service
+
+from bson import Decimal128
 import uvicorn
 from fastapi import FastAPI, HTTPException
 import csv
 from datetime import datetime
 import copy
-
-
-from services import account_service, transaction_service, user_service
+from services import user_service, account_service, transaction_service, loan_service 
 from models import models
 from decimal import Decimal
 
@@ -112,6 +111,7 @@ def deposit_money(id: int, account_request: models.AccountMoneyRequest):
     # MongoDB call to create a record of this.
     transaction_service.create_transaction(id, account_request.amount, "Deposit")
 
+
     if success == 0:
         return {
             "account_id": id,
@@ -136,6 +136,7 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
     # MongoDB call to create a record of this.
     transaction_service.create_transaction(id, -account_request.amount, "Withdraw")
 
+
     # NOTE: amount is negative here.
     if success == -1:
         return {
@@ -158,15 +159,23 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
 def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
     # call transfer function here
     account_service.transfer_funds(sender_id=sender_id, receiver_id=receiver_id, amount=amount)
-    transaction_service.create_transaction(sender_id, -amount, "Transfer to " + str(receiver_id))
 
-    # TODO: implement mongodb itegration for transaction collection
+    transaction_service.create_transaction(sender_id, -amount, "Transfer to " + str(receiver_id)
+    transaction_service.create_transaction(receiver_id, amount, "Transfer from account " +  str(sender_id))
+
     return {
         "sender_account_id": sender_id,
         "receiver_account_id": receiver_id, 
         "message": "Transfer successful"
     }
 
+@app.delete("/api/accounts/{account_id}")
+def close_account(account_id:int):
+    account_service.close_account(account_id)
+    return {
+        "account_id": account_id,
+        "message": "Account closed successfully"
+    }
 # ---------------------------------------------------------
 # Transaction History Endpoint
 # ---------------------------------------------------------
@@ -211,6 +220,53 @@ def get_transactions(id: int):
     return {
         "account_id": id,
         "transactions": transaction_list
+    }
+
+
+
+### API Endpoints for Loans
+@app.post("/api/loans")
+def create_loan(loan: models.Loans):
+    # call loan creation function here
+
+    print("calling create loan service")
+    loan_id = loan_service.create_loan(loan)
+    return {
+        "message": "Loan created successfully for account ID: " + str(loan.account_id),
+        "loan_id": str(loan_id)
+    }
+
+@app.get("/api/loans/{loan_id}")
+def get_loan_by_id(loan_id: int, account_id: int):
+    found_loan = loan_service.get_loan(loan_id, account_id)  # Assuming account_id is not required for this endpoint
+    return found_loan
+
+@app.get("/api/accounts/{account_id}/loans/active")
+def get_active_loans(account_id: int):
+    active_loans = loan_service.get_active_loans(account_id)
+    return {
+        "account_id": account_id,
+        "active_loans": active_loans
+    }
+
+@app.get("/api/accounts/{account_id}/loans/closed")
+def get_closed_loans(account_id: int):
+    closed_loans = loan_service.get_closed_loans(account_id)
+    return {
+        "account_id": account_id,
+        "closed_loans": closed_loans
+    }
+
+@app.post("/api/accounts/{account_id}/loans/{loan_id}/repay")
+def repay_loan(account_id: int, loan_id: int, amount: Decimal):
+    loan_service.repay_loan(loan_id, account_id, amount)
+    account_service.pay_loan(account_id, amount)
+    transaction_service.create_transaction(account_id, -amount, note=f"Loan repayment for loan ID {loan_id}")
+
+    return {
+        "account_id": account_id,
+        "loan_id": loan_id,
+        "message": "Loan repayment successful"
     }
 
 @app.get("/api/users/{user_id}/transactions")

@@ -33,7 +33,9 @@ def create_transaction(user_id, transaction_amount: Decimal, transaction_type: s
         "account_id": user_data["account_id"],
         "txn_type": transaction_type,
         "amount": Decimal128(transaction_amount),
-        "created_at": created_date
+        "created_at": created_date,
+        "note": note
+
     }
     print(f"\nTransaction record created with ID: {user_id}")
 

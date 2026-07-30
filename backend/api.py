@@ -181,7 +181,7 @@ def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
     # call transfer function here
     account_service.transfer_funds(sender_id=sender_id, receiver_id=receiver_id, amount=amount)
 
-    transaction_service.create_transaction(sender_id, -amount, "Transfer to " + str(receiver_id)
+    transaction_service.create_transaction(sender_id, -amount, "Transfer to " + str(receiver_id))
     transaction_service.create_transaction(receiver_id, amount, "Transfer from account " +  str(sender_id))
 
     return {

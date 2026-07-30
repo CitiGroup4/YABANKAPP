@@ -32,3 +32,8 @@ export const loginUser = async (credentials: LoginPayload): Promise<LoginRespons
   const response = await apiClient.post<LoginResponse>('/login', credentials);
   return response.data;
 };
+
+export const verifyUser = async (credentials: TokenPayload): Promise<VerifyResponse> => {
+  const response = await apiClient.post<TokenPayload>('/api/tokentest', credentials);
+  return response.data;
+};

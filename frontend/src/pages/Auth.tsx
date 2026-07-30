@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { loginUser, registerUser } from '../api/auth';
+import { loginUser, registerUser, verifyUser } from '../api/auth';
 
 interface AuthProps {
   onAuthSuccess: (user: { id: number; name: string; email: string }) => void;
@@ -32,6 +32,10 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       const res = await loginUser({
         email: loginEmail,
         password: loginPassword,
+      });
+
+      const tokenRes = await verifyUser({
+        token: res.new_token
       });
 
       onAuthSuccess({
@@ -69,6 +73,11 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       const loginRes = await loginUser({
         email: regEmail,
         password: regPassword,
+      });
+
+      // 3. Verify this user immediately as a test for authenticity
+      const tokenRes = await verifyUser({
+        token: loginRes.new_token
       });
 
       onAuthSuccess({

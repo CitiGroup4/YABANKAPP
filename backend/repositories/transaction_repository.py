@@ -18,18 +18,6 @@ def get_all_transactions():
         document_list.append(document)
     return document_list
 
-# def get_all_transactions():
-#
-#     transactions = []
-#
-#     with open(TRANSACTIONS_FILE_PATH, "r") as file:
-#
-#         reader = csv.DictReader(file)
-#
-#         for row in reader:
-#             transactions.append(row)
-#
-#     return transactions
 
 def update_transaction_record(new_transaction_record):
     try:
@@ -42,20 +30,5 @@ def update_transaction_record(new_transaction_record):
             status_code=500,
             detail=f"Unable to add transaction record: {e}"
         )
-
-    # Then, update transaction table with new entry.
-    # with open(TRANSACTIONS_FILE_PATH, "a", newline="") as file:
-    #     writer = csv.DictWriter(
-    #         file,
-    #         fieldnames=[
-    #             "txn_id",
-    #             "account_id",
-    #             "txn_type",
-    #             "amount",
-    #             "created_at"
-    #         ]
-    #     )
-    #
-    #     writer.writerow(new_transaction_record)
 
     return new_transaction_record

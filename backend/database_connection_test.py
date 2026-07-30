@@ -1,4 +1,4 @@
-from database.mongodb import client
+from backend.database.mongodb import client
 
 try:
     client.admin.command("ping")

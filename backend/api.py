@@ -1,3 +1,4 @@
+from services import account_service
 import uvicorn
 from fastapi import FastAPI, HTTPException
 import csv
@@ -13,20 +14,24 @@ from database.mongodb import client, close_database
 
 # EXAMPLE OF IN-MEMORY STORAGE FOR TOKEN.
 TOKEN_STO = []
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI(
     title="YA Bank API",
-    description="""
-    REST API for the YA Bank application.
-
-    Features:
-    - Create Accounts
-    - Retrieve Account Details
-    - Deposit Funds
-    - Withdraw Funds
-    - View Transaction History
-    """,
+    description="REST API for YA Bank",
     version="1.0.0"
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173" # change to frontend deployed site
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.on_event("startup")
@@ -46,7 +51,7 @@ def shutdown_event():
 def read_root():
     return {"message": "Bank API Running"}
 
-@app.post("/api/register")
+@app.post("/register")
 def register(user: models.Users):
     # call register function here
     print("calling register endpoint: ", user)
@@ -59,7 +64,7 @@ def register(user: models.Users):
     }
 
 
-@app.post("/api/login")
+@app.post("/login")
 def login(user: models.LoginRequest):
 
     logged_in_user = user_service.login_user(user)
@@ -100,7 +105,11 @@ def create_account(account: models.Accounts):
     }
 
 
-
+#get accounts by user
+@app.get("/api/users/{user_id}/accounts")
+def get_accounts_by_user(user_id: int):
+    accounts = account_service.get_accounts_by_user(user_id)
+    return accounts
 
 @app.get("/api/accounts/{account_id}")
 def get_account(account_id: int):
@@ -113,7 +122,6 @@ def get_account(account_id: int):
         )
 
     return found_account
-
 
 
 @app.post("/api/accounts/{id}/deposit")

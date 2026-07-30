@@ -1,3 +1,4 @@
+from typing import Optional
 from repositories import transaction_repository
 from services import account_service
 from datetime import datetime
@@ -20,21 +21,6 @@ def find_transactions(account_id: int):
 
 def create_transaction(user_id, transaction_amount: Decimal,note: str):
     user_data = account_service.get_account(user_id)
-
-    # transactions = transaction_repository.get_all_transactions()
-    # Generate new account ID
-    # ids = [
-    #     int(a["txn_id"])
-    #     for a in transactions
-    #     if a["txn_id"]
-    # ]
-    #
-    #
-    # if ids:
-    #     new_id = max(ids) + 1
-    # else:
-    #     new_id = 101
-
 
     # Generate creation date
     created_date = datetime.now().strftime(

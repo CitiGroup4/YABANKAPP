@@ -5,7 +5,13 @@ import { SpendingChart } from '../components/SpendingChart';
 import { CardsGallery } from '../components/CardsGallery';
 import { AccountDetails } from './AccountDetails';
 import type { Account, Card, SpendingData, Transaction } from '../types/bank';
-import { getAccountsByUserId, createAccount } from '../api/accounts';
+import {
+  getAccountsByUserId,
+  createAccount,
+  depositMoney,
+  withdrawMoney,
+  transferFunds,
+} from '../api/accounts';
 
 interface DashboardProps {
   userId?: number;
@@ -31,26 +37,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [cards, setCards] = useState<Card[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
-  
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        const data = await getAccountsByUserId(userId);
-        setAccounts(data);
-      } catch (err: any) {
-        console.error('Error loading accounts:', err);
-        setError(err.message || 'Failed to load accounts.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchAccounts = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await getAccountsByUserId(userId);
+      setAccounts(data);
+    } catch (err: any) {
+      console.error('Error loading accounts:', err);
+      setError(err.message || 'Failed to load accounts.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchAccounts();
   }, [userId]);
 
@@ -65,65 +70,97 @@ export const Dashboard: React.FC<DashboardProps> = ({
         account_type: newAccount.account_type,
       });
 
-      // Re-fetch to synchronize state with the server DB
-      const refreshedAccounts = await getAccountsByUserId(userId);
-      setAccounts(refreshedAccounts);
+      await fetchAccounts();
     } catch (err: any) {
       console.error('Error creating account:', err);
       setError(err.message || 'Failed to create account.');
     }
   };
 
-  const handleDeposit = (accountId: number, amount: number) => {
-    setAccounts((prev) =>
-      prev.map((acc) =>
-        acc.account_id === accountId ? { ...acc, balance: acc.balance + amount } : acc
-      )
-    );
-    setTransactions((prev) => [
-      {
-        txn_id: Date.now(),
-        account_id: accountId,
-        txn_type: 'Deposit',
-        amount,
-        created_at: getFormattedTimestamp(),
-      },
-      ...prev,
-    ]);
+  const handleDeposit = async (accountId: number, amount: number) => {
+    try {
+      const res = await depositMoney(accountId, amount);
+      if (res.message.includes('not found')) {
+        setError(res.message);
+        return;
+      }
+
+      setTransactions((prev) => [
+        {
+          txn_id: Date.now(),
+          account_id: accountId,
+          txn_type: 'Deposit',
+          amount,
+          created_at: getFormattedTimestamp(),
+        },
+        ...prev,
+      ]);
+
+      await fetchAccounts();
+    } catch (err: any) {
+      console.error('Error processing deposit:', err);
+      setError(err.message || 'Failed to process deposit.');
+    }
   };
 
-  const handleWithdraw = (accountId: number, amount: number) => {
-    setAccounts((prev) =>
-      prev.map((acc) =>
-        acc.account_id === accountId ? { ...acc, balance: acc.balance - amount } : acc
-      )
-    );
-    setTransactions((prev) => [
-      {
-        txn_id: Date.now(),
-        account_id: accountId,
-        txn_type: 'Withdrawal',
-        amount: -amount,
-        created_at: getFormattedTimestamp(),
-      },
-      ...prev,
-    ]);
+  const handleWithdraw = async (accountId: number, amount: number) => {
+    try {
+      const res = await withdrawMoney(accountId, amount);
+      if (res.message.includes('Insufficient') || res.message.includes('not found')) {
+        setError(res.message);
+        return;
+      }
+
+      setTransactions((prev) => [
+        {
+          txn_id: Date.now(),
+          account_id: accountId,
+          txn_type: 'Withdrawal',
+          amount: -amount,
+          created_at: getFormattedTimestamp(),
+        },
+        ...prev,
+      ]);
+
+      await fetchAccounts();
+    } catch (err: any) {
+      console.error('Error processing withdrawal:', err);
+      setError(err.message || 'Failed to process withdrawal.');
+    }
   };
 
-  const handleTransfer = (fromAccountId: number, toAccountId: number, amount: number) => {
-    setAccounts((prev) =>
-      prev.map((acc) => {
-        if (acc.account_id === fromAccountId) return { ...acc, balance: acc.balance - amount };
-        if (acc.account_id === toAccountId) return { ...acc, balance: acc.balance + amount };
-        return acc;
-      })
-    );
-    const now = getFormattedTimestamp();
-    setTransactions((prev) => [
-      { txn_id: Date.now(), account_id: fromAccountId, txn_type: 'Transfer Out', amount: -amount, created_at: now },
-      { txn_id: Date.now() + 1, account_id: toAccountId, txn_type: 'Transfer In', amount, created_at: now },
-      ...prev,
-    ]);
+  const handleTransfer = async (
+    fromAccountId: number,
+    toAccountId: number,
+    amount: number
+  ) => {
+    try {
+      await transferFunds(fromAccountId, toAccountId, amount);
+
+      const now = getFormattedTimestamp();
+      setTransactions((prev) => [
+        {
+          txn_id: Date.now(),
+          account_id: fromAccountId,
+          txn_type: 'Transfer Out',
+          amount: -amount,
+          created_at: now,
+        },
+        {
+          txn_id: Date.now() + 1,
+          account_id: toAccountId,
+          txn_type: 'Transfer In',
+          amount,
+          created_at: now,
+        },
+        ...prev,
+      ]);
+
+      await fetchAccounts();
+    } catch (err: any) {
+      console.error('Error processing transfer:', err);
+      setError(err.message || 'Failed to process transfer.');
+    }
   };
 
   const handleDeleteAccount = (accountId: number) => {
@@ -136,7 +173,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   if (selectedAccount) {
-    const activeAccount = accounts.find((a) => a.account_id === selectedAccount.account_id);
+    const activeAccount = accounts.find(
+      (a) => a.account_id === selectedAccount.account_id
+    );
     if (!activeAccount) {
       setSelectedAccount(null);
       return null;
@@ -163,8 +202,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       <main className="max-w-7xl mx-auto p-6 space-y-6">
         {error && (
-          <div className="bg-red-100 border border-red-300 text-red-800 p-4 rounded-2xl text-xs">
-            {error}
+          <div className="bg-red-100 border border-red-300 text-red-800 p-4 rounded-2xl text-xs flex justify-between items-center">
+            <span>{error}</span>
+            <button
+              onClick={() => setError(null)}
+              className="font-bold ml-4 cursor-pointer"
+            >
+              ✕
+            </button>
           </div>
         )}
 

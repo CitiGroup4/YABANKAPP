@@ -110,7 +110,7 @@ def deposit_money(id: int, account_request: models.AccountMoneyRequest):
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=True)
 
     # MongoDB call to create a record of this.
-    transaction_service.create_transaction(id, account_request.amount)
+    transaction_service.create_transaction(id, account_request.amount, "Deposit")
 
     if success == 0:
         return {
@@ -134,7 +134,7 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=False)
 
     # MongoDB call to create a record of this.
-    transaction_service.create_transaction(id, -account_request.amount)
+    transaction_service.create_transaction(id, -account_request.amount, "Withdraw")
 
     # NOTE: amount is negative here.
     if success == -1:
@@ -158,7 +158,8 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
 def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
     # call transfer function here
     account_service.transfer_funds(sender_id=sender_id, receiver_id=receiver_id, amount=amount)
-    
+    transaction_service.create_transaction(sender_id, -amount, "Transfer to " + str(receiver_id))
+
     # TODO: implement mongodb itegration for transaction collection
     return {
         "sender_account_id": sender_id,
@@ -208,8 +209,8 @@ def get_transactions(id: int):
     transaction_list = transaction_service.find_transactions(id)
 
     return {
-        "account_id": id
-        #"transactions": transaction_list
+        "account_id": id,
+        "transactions": transaction_list
     }
 
 #Use 8000/docs to view the API documentation.

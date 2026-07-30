@@ -19,7 +19,7 @@ def find_transactions(account_id: int):
     return cleaned_transaction_list
 
 
-def create_transaction(user_id, transaction_amount: Decimal):
+def create_transaction(user_id, transaction_amount: Decimal, transaction_type: str):
     user_data = account_service.get_account(user_id)
 
     # Generate creation date
@@ -31,7 +31,7 @@ def create_transaction(user_id, transaction_amount: Decimal):
     new_transaction_data = {
         "txn_id": user_id,
         "account_id": user_data["account_id"],
-        "txn_type": user_data["account_type"],
+        "txn_type": transaction_type,
         "amount": Decimal128(transaction_amount),
         "created_at": created_date
     }

@@ -167,13 +167,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 <label className="block text-xs font-bold text-amber-950">
                   Password
                 </label>
-                <a
-                  href="#forgot"
-                  onClick={(e) => e.preventDefault()}
-                  className="text-xs text-amber-800 hover:text-amber-950 font-semibold hover:underline"
-                >
-                  Forgot?
-                </a>
+
               </div>
               <div className="relative">
                 <input
@@ -277,45 +271,11 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           </form>
         )}
 
-        {/* Footer Link Switcher */}
-        <div className="pt-2 border-t border-amber-200/60 text-center">
-          <p className="text-xs text-amber-800/80">
-            {mode === 'login' ? (
-              <>
-                Don't have an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('register');
-                    setError(null);
-                  }}
-                  className="text-amber-950 font-bold hover:underline cursor-pointer"
-                >
-                  Sign up
-                </button>
-              </>
-            ) : (
-              <>
-                Already registered?{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('login');
-                    setError(null);
-                  }}
-                  className="text-amber-950 font-bold hover:underline cursor-pointer"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
-          </p>
-        </div>
 
         {/* Security Badge */}
         <div className="flex items-center justify-center space-x-1.5 text-[10px] text-amber-800/60 pt-1">
           <span>🔒</span>
-          <span>Encrypted 256-bit Secure Banking</span>
+          <span>JWT Secure Authentication</span>
         </div>
 
       </div>

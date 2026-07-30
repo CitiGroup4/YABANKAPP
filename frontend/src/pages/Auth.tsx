@@ -93,8 +93,8 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
         
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 bg-gradient-to-br from-amber-700 to-amber-900 text-amber-50 font-bold text-xl rounded-2xl flex items-center justify-center mx-auto mb-3 border border-amber-600/30">
-            B
+          <div className="w-14 h-14 bg-gradient-to-br from-amber-700 to-amber-900 text-amber-50 font-bold text-xl rounded-2xl flex items-center justify-center mx-auto mb-3 border border-amber-600/30">
+            YAB
           </div>
           <h1 className="text-2xl font-extrabold text-amber-950 tracking-tight">
             {mode === 'login' ? 'Welcome Back' : 'Create an Account'}

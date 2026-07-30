@@ -34,9 +34,15 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
 
   // Form states
   const [amount, setAmount] = useState<string>('');
+  
+  // Transfer-specific states
+  const [transferMode, setTransferMode] = useState<'internal' | 'external'>('internal');
   const [targetAccountId, setTargetAccountId] = useState<number>(
     allAccounts.find((a) => a.account_id !== account.account_id)?.account_id || 0
   );
+  const [customAccountId, setCustomAccountId] = useState<string>('');
+
+  // Card states
   const [cardType, setCardType] = useState<'Visa' | 'Mastercard' | 'Amex'>('Visa');
   const [cardVariant, setCardVariant] = useState<'credit' | 'debit'>('debit');
 
@@ -82,11 +88,20 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
   const handleTransferSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseFloat(amount);
-    if (val > 0 && val <= account.balance && targetAccountId) {
-      await onTransfer(account.account_id, targetAccountId, val);
+    
+    // Determine destination account ID based on selected mode
+    const destinationId = transferMode === 'internal' 
+      ? targetAccountId 
+      : parseInt(customAccountId, 10);
+
+    if (val > 0 && val <= account.balance && destinationId && destinationId !== account.account_id) {
+      await onTransfer(account.account_id, destinationId, val);
       setAmount('');
+      setCustomAccountId('');
       setActiveModal(null);
       await fetchTransactions(); // Refresh list after action
+    } else if (destinationId === account.account_id) {
+      alert('Cannot transfer money to the same account.');
     }
   };
 
@@ -301,24 +316,73 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
             {/* Transfer Form */}
             {activeModal === 'transfer' && (
               <form onSubmit={handleTransferSubmit} className="space-y-4">
+                {/* Transfer Type Segmented Control */}
                 <div>
-                  <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
-                    Destination Account
+                  <label className="block text-xs font-semibold text-amber-900 uppercase mb-2">
+                    Transfer Destination Type
                   </label>
-                  <select
-                    value={targetAccountId}
-                    onChange={(e) => setTargetAccountId(Number(e.target.value))}
-                    className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium focus:ring-2 focus:ring-amber-500/50 outline-none"
-                  >
-                    {allAccounts
-                      .filter((a) => a.account_id !== account.account_id)
-                      .map((a) => (
-                        <option key={a.account_id} value={a.account_id}>
-                          Account #{a.account_id} ({a.account_type}) - ${a.balance.toFixed(2)}
-                        </option>
-                      ))}
-                  </select>
+                  <div className="grid grid-cols-2 gap-2 bg-amber-200/50 p-1 rounded-xl border border-amber-300/60">
+                    <button
+                      type="button"
+                      onClick={() => setTransferMode('internal')}
+                      className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                        transferMode === 'internal'
+                          ? 'bg-amber-800 text-white shadow-sm'
+                          : 'text-amber-950 hover:bg-amber-200/80'
+                      }`}
+                    >
+                      My Accounts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTransferMode('external')}
+                      className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                        transferMode === 'external'
+                          ? 'bg-amber-800 text-white shadow-sm'
+                          : 'text-amber-950 hover:bg-amber-200/80'
+                      }`}
+                    >
+                      External Account ID
+                    </button>
+                  </div>
                 </div>
+
+                {/* Conditional Destination Input */}
+                {transferMode === 'internal' ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
+                      Select Your Account
+                    </label>
+                    <select
+                      value={targetAccountId}
+                      onChange={(e) => setTargetAccountId(Number(e.target.value))}
+                      className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium focus:ring-2 focus:ring-amber-500/50 outline-none"
+                    >
+                      {allAccounts
+                        .filter((a) => a.account_id !== account.account_id)
+                        .map((a) => (
+                          <option key={a.account_id} value={a.account_id}>
+                            Account #{a.account_id} ({a.account_type}) - ${a.balance.toFixed(2)}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
+                      Target Account ID
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="e.g. 1024"
+                      value={customAccountId}
+                      onChange={(e) => setCustomAccountId(e.target.value)}
+                      className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium focus:ring-2 focus:ring-amber-500/50 outline-none font-mono"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
                     Transfer Amount ($)
@@ -333,6 +397,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
                     className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium focus:ring-2 focus:ring-amber-500/50 outline-none"
                   />
                 </div>
+
                 <button
                   type="submit"
                   className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs rounded-xl shadow-sm cursor-pointer"

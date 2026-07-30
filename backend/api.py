@@ -213,6 +213,13 @@ def get_transactions(id: int):
         "transactions": transaction_list
     }
 
+@app.get("/api/users/{user_id}/transactions")
+def get_transaction_history(user_id: int):
+    # call transaction history function here
+    transaction_list = transaction_service.find_user_transactions(user_id)
+
+    return transaction_list
+
 #Use 8000/docs to view the API documentation.
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

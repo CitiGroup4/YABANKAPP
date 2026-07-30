@@ -1,5 +1,6 @@
-import { apiClient } from './client';
-import type { Account } from '../types/bank';
+import {apiClient} from './client'; // or your configured axios instance
+import type { Account, Transaction } from '../types/bank';
+
 
 export interface CreateAccountDTO {
   user_id: number;
@@ -108,6 +109,12 @@ export const transferFunds = async (
 };
 
 
+
+export interface FetchTransactionsResponse {
+  account_id: number;
+  transactions: Transaction[];
+}
+
 /**
  * Fetch transactions for a specific account
  */
@@ -116,6 +123,18 @@ export const getAccountTransactions = async (
 ): Promise<FetchTransactionsResponse> => {
   const response = await apiClient.get<FetchTransactionsResponse>(
     `/api/accounts/${accountId}/transactions`
+  );
+  return response.data;
+};
+
+/**
+ * Fetch all transaction history for a user
+ */
+export const getUserTransactions = async (
+  userId: number
+): Promise<Transaction[]> => {
+  const response = await apiClient.get<Transaction[]>(
+    `/api/users/${userId}/transactions`
   );
   return response.data;
 };

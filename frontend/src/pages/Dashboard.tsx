@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from '../components/Header';
 import { AccountsList } from '../components/AccountsList';
 import { SpendingChart } from '../components/SpendingChart';
@@ -7,6 +7,7 @@ import { AccountDetails } from './AccountDetails';
 import type { Account, Card, SpendingData, Transaction } from '../types/bank';
 import {
   getAccountsByUserId,
+  getUserTransactions,
   createAccount,
   depositMoney,
   withdrawMoney,
@@ -19,14 +20,7 @@ interface DashboardProps {
   onLogout?: () => void;
 }
 
-const mockSpending: SpendingData[] = [
-  { month: 'Jan', amount: 1800 },
-  { month: 'Feb', amount: 2200 },
-  { month: 'Mar', amount: 1500 },
-  { month: 'Apr', amount: 2800 },
-  { month: 'May', amount: 2100 },
-  { month: 'Jun', amount: 1950 },
-];
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export const Dashboard: React.FC<DashboardProps> = ({
   userId = 2,
@@ -41,26 +35,59 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAccounts = async () => {
+  // Fetch accounts and user transaction history
+  const fetchData = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getAccountsByUserId(userId);
-      setAccounts(data);
+
+      const [accountsData, transactionsData] = await Promise.all([
+        getAccountsByUserId(userId),
+        getUserTransactions(userId),
+      ]);
+
+      setAccounts(accountsData);
+      setTransactions(transactionsData);
     } catch (err: any) {
-      console.error('Error loading accounts:', err);
-      setError(err.message || 'Failed to load accounts.');
+      console.error('Error loading dashboard data:', err);
+      setError(err.message || 'Failed to load dashboard data.');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAccounts();
+    fetchData();
   }, [userId]);
 
-  const getFormattedTimestamp = () =>
-    new Date().toISOString().replace('T', ' ').substring(0, 19);
+  // Dynamically compute monthly spending from actual transactions
+  const computedSpendingData: SpendingData[] = useMemo(() => {
+    const monthlyTotals: Record<string, number> = {};
+
+    transactions.forEach((txn) => {
+      const amount = Number(txn.amount);
+    
+      // Filter for spending transactions (e.g., negative amounts, Withdrawals, or Transfer Out)
+      const isSpending = 
+        amount < 0 || 
+        txn.txn_type.toLowerCase().includes('withdraw') || 
+        txn.txn_type.toLowerCase().includes('out');
+
+      if (isSpending && txn.created_at) {
+        const date = new Date(txn.created_at);
+        const monthLabel = MONTH_NAMES[date.getMonth()];
+        const absoluteAmount = Math.abs(amount);
+
+        monthlyTotals[monthLabel] = (monthlyTotals[monthLabel] || 0) + absoluteAmount;
+      }
+    });
+
+    // Format output as array of SpendingData
+    return MONTH_NAMES.map((month) => ({
+      month,
+      amount: monthlyTotals[month] || 0,
+    })).filter((item) => item.amount > 0); // Exclude months with zero spending
+  }, [transactions]);
 
   const handleAddAccount = async (newAccount: Account) => {
     try {
@@ -70,7 +97,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         account_type: newAccount.account_type,
       });
 
-      await fetchAccounts();
+      await fetchData();
     } catch (err: any) {
       console.error('Error creating account:', err);
       setError(err.message || 'Failed to create account.');
@@ -80,23 +107,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const handleDeposit = async (accountId: number, amount: number) => {
     try {
       const res = await depositMoney(accountId, amount);
-      if (res.message.includes('not found')) {
+      if (res.message?.includes('not found')) {
         setError(res.message);
         return;
       }
 
-      setTransactions((prev) => [
-        {
-          txn_id: Date.now(),
-          account_id: accountId,
-          txn_type: 'Deposit',
-          amount,
-          created_at: getFormattedTimestamp(),
-        },
-        ...prev,
-      ]);
-
-      await fetchAccounts();
+      await fetchData();
     } catch (err: any) {
       console.error('Error processing deposit:', err);
       setError(err.message || 'Failed to process deposit.');
@@ -106,23 +122,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const handleWithdraw = async (accountId: number, amount: number) => {
     try {
       const res = await withdrawMoney(accountId, amount);
-      if (res.message.includes('Insufficient') || res.message.includes('not found')) {
+      if (res.message?.includes('Insufficient') || res.message?.includes('not found')) {
         setError(res.message);
         return;
       }
 
-      setTransactions((prev) => [
-        {
-          txn_id: Date.now(),
-          account_id: accountId,
-          txn_type: 'Withdrawal',
-          amount: -amount,
-          created_at: getFormattedTimestamp(),
-        },
-        ...prev,
-      ]);
-
-      await fetchAccounts();
+      await fetchData();
     } catch (err: any) {
       console.error('Error processing withdrawal:', err);
       setError(err.message || 'Failed to process withdrawal.');
@@ -136,27 +141,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   ) => {
     try {
       await transferFunds(fromAccountId, toAccountId, amount);
-
-      const now = getFormattedTimestamp();
-      setTransactions((prev) => [
-        {
-          txn_id: Date.now(),
-          account_id: fromAccountId,
-          txn_type: 'Transfer Out',
-          amount: -amount,
-          created_at: now,
-        },
-        {
-          txn_id: Date.now() + 1,
-          account_id: toAccountId,
-          txn_type: 'Transfer In',
-          amount,
-          created_at: now,
-        },
-        ...prev,
-      ]);
-
-      await fetchAccounts();
+      await fetchData();
     } catch (err: any) {
       console.error('Error processing transfer:', err);
       setError(err.message || 'Failed to process transfer.');
@@ -215,7 +200,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {isLoading ? (
           <div className="flex justify-center items-center py-20 text-stone-500 text-sm font-semibold">
-            Loading accounts...
+            Loading dashboard data...
           </div>
         ) : (
           <AccountsList
@@ -227,7 +212,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SpendingChart data={mockSpending} transactions={transactions} />
+          <SpendingChart 
+            data={computedSpendingData.length > 0 ? computedSpendingData : []} 
+            transactions={transactions} 
+          />
           <CardsGallery
             cards={cards}
             accounts={accounts}

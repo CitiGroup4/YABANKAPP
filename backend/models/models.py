@@ -59,6 +59,19 @@ EXTRA BODY MODELS FOR API CALLS HERE
 # BOTH FIELDS ARE REQUIRED.
 class AccountMoneyRequest(BaseModel):
     amount: Decimal
+    note: Optional[str]  # Optional note field for additional information
+
+"""
+Loan Model
+"""
+class Loans(BaseModel):
+    account_id: int
+    loan_amount: Decimal
+    interest_rate: Decimal
+    amount_left: Decimal = Field(default=0)
+    collateral: Optional[str] = None
+    time_period: int
+    status: str = Field(max_length=20, default="active")
 
 """
 CARDS MODEL

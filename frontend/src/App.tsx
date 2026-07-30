@@ -2,27 +2,33 @@ import React, { useState } from 'react';
 import { Auth } from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 
-export const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<string>('Alex Morgan');
+export interface UserSession {
+  id: number;
+  name: string;
+  email: string;
+}
 
-  const handleAuthSuccess = (username: string) => {
-    setUser(username);
-    setIsAuthenticated(true); // 🚀 Directly goes to Dashboard!
+export const App: React.FC = () => {
+  const [user, setUser] = useState<UserSession | null>(null);
+
+  const handleAuthSuccess = (userData: UserSession) => {
+    setUser(userData);
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false); // 🔙 Returns to Login/Signup page
+    setUser(null);
   };
 
+  if (!user) {
+    return <Auth onAuthSuccess={handleAuthSuccess} />;
+  }
+
   return (
-    <div>
-      {isAuthenticated ? (
-        <Dashboard username={user} onLogout={handleLogout} />
-      ) : (
-        <Auth onAuthSuccess={handleAuthSuccess} />
-      )}
-    </div>
+    <Dashboard
+      userId={user.id}
+      username={user.name}
+      onLogout={handleLogout}
+    />
   );
 };
 

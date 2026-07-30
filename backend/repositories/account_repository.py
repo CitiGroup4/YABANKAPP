@@ -12,6 +12,8 @@ db = get_database()
 account_collection = db["accounts"]
 
 
+def find_accounts_by_user(user_id: int):
+    return account_collection.find({"user_id": user_id})
 
 
 def find_account_by_id(account_id: int):

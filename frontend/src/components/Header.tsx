@@ -10,9 +10,9 @@ export const Header: React.FC<HeaderProps> = ({ username, onLogout }) => {
     <header className="bg-amber-950 text-amber-50 px-6 py-4 shadow-md flex justify-between items-center">
       <div className="flex items-center space-x-3">
         <div className="w-8 h-8 bg-amber-800 text-amber-50 font-bold rounded-xl flex items-center justify-center">
-          B
+          YA
         </div>
-        <span className="font-bold tracking-tight text-lg">Apex Banking</span>
+        <span className="font-bold tracking-tight text-lg">Yet Another Bank</span>
       </div>
 
       <div className="flex items-center space-x-4">

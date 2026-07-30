@@ -1,46 +1,97 @@
 import React, { useState } from 'react';
+import { loginUser, registerUser } from '../api/auth';
 
 interface AuthProps {
-  onAuthSuccess: (username: string) => void;
+  onAuthSuccess: (user: { id: number; name: string; email: string }) => void;
 }
 
 export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
 
-  // Form States
+  // Login Form State
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  
+
+  // Register Form State
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
 
+  // UI state
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const displayName = loginEmail.trim() ? loginEmail.split('@')[0] : 'Alex Morgan';
-    onAuthSuccess(displayName);
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const res = await loginUser({
+        email: loginEmail,
+        password: loginPassword,
+      });
+
+      onAuthSuccess({
+        id: res.user_id,
+        name: res.name,
+        email: res.email,
+      });
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const displayName =
-      regName.trim() || (regEmail.trim() ? regEmail.split('@')[0] : 'Alex Morgan');
-    onAuthSuccess(displayName);
+    setError(null);
+
+    if (regPassword !== regConfirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // 1. Register User
+      await registerUser({
+        name: regName,
+        email: regEmail,
+        password: regPassword,
+      });
+
+      // 2. Auto Login after Registration
+      const loginRes = await loginUser({
+        email: regEmail,
+        password: regPassword,
+      });
+
+      onAuthSuccess({
+        id: loginRes.user_id,
+        name: loginRes.name,
+        email: loginRes.email,
+      });
+    } catch (err: any) {
+      setError(err.message || 'Registration failed.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-stone-100 flex items-center justify-center p-4 sm:p-6 font-sans select-none relative overflow-hidden">
-      {/* Background Decorative Gradient Orbs */}
+      {/* Background Decor */}
       <div className="absolute -top-24 -left-24 w-96 h-96 bg-amber-200/40 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-orange-200/40 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Main Glassmorphic Auth Card */}
       <div className="relative w-full max-w-md bg-gradient-to-b from-orange-50/90 to-amber-50/50 backdrop-blur-xl border border-amber-200/80 rounded-3xl p-6 sm:p-8 space-y-6">
         
-        {/* Brand Logo & Header */}
+        {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="w-12 h-12 bg-gradient-to-br from-amber-700 to-amber-900 text-amber-50 font-bold text-xl rounded-2xl flex items-center justify-center mx-auto mb-3 border border-amber-600/30">
             B
@@ -55,6 +106,44 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           </p>
         </div>
 
+        {/* Tab Switcher */}
+        <div className="grid grid-cols-2 p-1 bg-amber-100/60 rounded-2xl border border-amber-200/70 text-xs font-semibold">
+          <button
+            type="button"
+            onClick={() => {
+              setMode('login');
+              setError(null);
+            }}
+            className={`py-2 rounded-xl transition-all duration-200 cursor-pointer ${
+              mode === 'login'
+                ? 'bg-white text-amber-950 border border-amber-200/80 shadow-xs'
+                : 'text-amber-800/70 hover:text-amber-950'
+            }`}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('register');
+              setError(null);
+            }}
+            className={`py-2 rounded-xl transition-all duration-200 cursor-pointer ${
+              mode === 'register'
+                ? 'bg-white text-amber-950 border border-amber-200/80 shadow-xs'
+                : 'text-amber-800/70 hover:text-amber-950'
+            }`}
+          >
+            Sign Up
+          </button>
+        </div>
+
+        {/* Error Notification */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-medium">
+            {error}
+          </div>
+        )}
 
         {/* --- SIGN IN FORM --- */}
         {mode === 'login' && (
@@ -69,7 +158,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
                 placeholder="alex@example.com"
-                className="w-full text-xs px-4 py-3 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                className="w-full text-xs px-4 py-3 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
               />
             </div>
 
@@ -93,7 +182,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full text-xs px-4 py-3 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all pr-14"
+                  className="w-full text-xs px-4 py-3 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all pr-14"
                 />
                 <button
                   type="button"
@@ -107,9 +196,10 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-amber-800 hover:bg-amber-900 text-amber-50 font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-[0.99] border border-amber-900/50 mt-2"
+              disabled={isLoading}
+              className="w-full py-3 px-4 bg-amber-800 hover:bg-amber-900 disabled:opacity-50 text-amber-50 font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-[0.99] border border-amber-900/50 mt-2"
             >
-              Sign In to Dashboard
+              {isLoading ? 'Signing In...' : 'Sign In to Dashboard'}
             </button>
           </form>
         )}
@@ -127,7 +217,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 value={regName}
                 onChange={(e) => setRegName(e.target.value)}
                 placeholder="Alex Morgan"
-                className="w-full text-xs px-4 py-2.5 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                className="w-full text-xs px-4 py-2.5 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
               />
             </div>
 
@@ -141,7 +231,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 value={regEmail}
                 onChange={(e) => setRegEmail(e.target.value)}
                 placeholder="alex@example.com"
-                className="w-full text-xs px-4 py-2.5 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                className="w-full text-xs px-4 py-2.5 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
               />
             </div>
 
@@ -156,7 +246,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full text-xs px-3 py-2.5 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                  className="w-full text-xs px-3 py-2.5 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
                 />
               </div>
 
@@ -170,7 +260,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                   value={regConfirmPassword}
                   onChange={(e) => setRegConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full text-xs px-3 py-2.5 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                  className="w-full text-xs px-3 py-2.5 rounded-xl border border-amber-300/70 bg-white/80 text-amber-950 placeholder-amber-800/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
                 />
               </div>
             </div>
@@ -178,9 +268,10 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             <div className="pt-1">
               <button
                 type="submit"
-                className="w-full py-3 px-4 bg-amber-800 hover:bg-amber-900 text-amber-50 font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-[0.99] border border-amber-900/50"
+                disabled={isLoading}
+                className="w-full py-3 px-4 bg-amber-800 hover:bg-amber-900 disabled:opacity-50 text-amber-50 font-bold text-xs rounded-xl transition-all cursor-pointer active:scale-[0.99] border border-amber-900/50"
               >
-                Create Account & Continue
+                {isLoading ? 'Creating Account...' : 'Create Account & Continue'}
               </button>
             </div>
           </form>
@@ -194,7 +285,10 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 Don't have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setMode('register')}
+                  onClick={() => {
+                    setMode('register');
+                    setError(null);
+                  }}
                   className="text-amber-950 font-bold hover:underline cursor-pointer"
                 >
                   Sign up
@@ -205,7 +299,10 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 Already registered?{' '}
                 <button
                   type="button"
-                  onClick={() => setMode('login')}
+                  onClick={() => {
+                    setMode('login');
+                    setError(null);
+                  }}
                   className="text-amber-950 font-bold hover:underline cursor-pointer"
                 >
                   Sign in
@@ -215,6 +312,11 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           </p>
         </div>
 
+        {/* Security Badge */}
+        <div className="flex items-center justify-center space-x-1.5 text-[10px] text-amber-800/60 pt-1">
+          <span>🔒</span>
+          <span>Encrypted 256-bit Secure Banking</span>
+        </div>
 
       </div>
     </div>

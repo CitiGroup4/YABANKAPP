@@ -1,56 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { AccountsList } from '../components/AccountsList';
 import { SpendingChart } from '../components/SpendingChart';
 import { CardsGallery } from '../components/CardsGallery';
 import { AccountDetails } from './AccountDetails';
 import type { Account, Card, SpendingData, Transaction } from '../types/bank';
+import { getAccountsByUserId, createAccount } from '../api/accounts';
 
-// 1. Define props interface for Dashboard
 interface DashboardProps {
+  userId?: number;
   username?: string;
   onLogout?: () => void;
 }
-
-const initialAccounts: Account[] = [
-  { account_id: 101, user_id: 1, balance: 3550.0, account_type: 'Checking', created_at: '2026-07-28 18:59:44' },
-  { account_id: 102, user_id: 1, balance: 4350.0, account_type: 'Checking', created_at: '2026-07-28 18:59:55' },
-  { account_id: 103, user_id: 1, balance: 50054.0, account_type: 'Checking', created_at: '2026-07-28 19:00:12' },
-  { account_id: 104, user_id: 1, balance: 50054.0, account_type: 'Checking', created_at: '2026-07-28 19:00:22' },
-  { account_id: 105, user_id: 1, balance: 554.0, account_type: 'Saving', created_at: '2026-07-28 19:03:15' },
-];
-
-const initialTransactions: Transaction[] = [
-  { txn_id: 102, account_id: 102, txn_type: 'Checking', amount: -50.0, created_at: '2026-07-29 10:27:58' },
-  { txn_id: 102, account_id: 102, txn_type: 'Checking', amount: 500.0, created_at: '2026-07-29 10:43:27' },
-  { txn_id: 102, account_id: 102, txn_type: 'Checking', amount: 500.0, created_at: '2026-07-29 10:43:43' },
-  { txn_id: 101, account_id: 101, txn_type: 'Checking', amount: 500.0, created_at: '2026-07-29 10:44:02' },
-  { txn_id: 101, account_id: 101, txn_type: 'Checking', amount: 500.0, created_at: '2026-07-29 10:44:19' },
-  { txn_id: 101, account_id: 101, txn_type: 'Checking', amount: -50.0, created_at: '2026-07-29 10:44:50' },
-];
-
-const initialCards: Card[] = [
-  {
-    id: 'c1',
-    account_id: 101,
-    cardHolder: 'Alex Morgan',
-    cardNumber: '4532890123458821',
-    expiry: '08/28',
-    type: 'Visa',
-    variant: 'credit',
-    bgGradient: 'bg-gradient-to-br from-amber-800 via-orange-900 to-stone-900',
-  },
-  {
-    id: 'c2',
-    account_id: 102,
-    cardHolder: 'Alex Morgan',
-    cardNumber: '5412751234891092',
-    expiry: '11/27',
-    type: 'Mastercard',
-    variant: 'debit',
-    bgGradient: 'bg-gradient-to-br from-stone-800 via-amber-900 to-amber-950',
-  },
-];
 
 const mockSpending: SpendingData[] = [
   { month: 'Jan', amount: 1800 },
@@ -61,21 +22,56 @@ const mockSpending: SpendingData[] = [
   { month: 'Jun', amount: 1950 },
 ];
 
-// 2. Accept props in Dashboard component
 export const Dashboard: React.FC<DashboardProps> = ({
-  username = 'Alex Morgan',
+  userId = 2,
+  username = 'User',
   onLogout,
 }) => {
-  const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [cards, setCards] = useState<Card[]>(initialCards);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const data = await getAccountsByUserId(userId);
+        setAccounts(data);
+      } catch (err: any) {
+        console.error('Error loading accounts:', err);
+        setError(err.message || 'Failed to load accounts.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAccounts();
+  }, [userId]);
 
   const getFormattedTimestamp = () =>
     new Date().toISOString().replace('T', ' ').substring(0, 19);
 
-  const handleAddAccount = (newAccount: Account) => {
-    setAccounts((prev) => [newAccount, ...prev]);
+  const handleAddAccount = async (newAccount: Account) => {
+    try {
+      await createAccount({
+        user_id: newAccount.user_id || userId,
+        balance: newAccount.balance,
+        account_type: newAccount.account_type,
+      });
+
+      // Re-fetch to synchronize state with the server DB
+      const refreshedAccounts = await getAccountsByUserId(userId);
+      setAccounts(refreshedAccounts);
+    } catch (err: any) {
+      console.error('Error creating account:', err);
+      setError(err.message || 'Failed to create account.');
+    }
   };
 
   const handleDeposit = (accountId: number, amount: number) => {
@@ -86,7 +82,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     );
     setTransactions((prev) => [
       {
-        txn_id: accountId,
+        txn_id: Date.now(),
         account_id: accountId,
         txn_type: 'Deposit',
         amount,
@@ -104,7 +100,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     );
     setTransactions((prev) => [
       {
-        txn_id: accountId,
+        txn_id: Date.now(),
         account_id: accountId,
         txn_type: 'Withdrawal',
         amount: -amount,
@@ -124,8 +120,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     );
     const now = getFormattedTimestamp();
     setTransactions((prev) => [
-      { txn_id: fromAccountId, account_id: fromAccountId, txn_type: 'Transfer Out', amount: -amount, created_at: now },
-      { txn_id: toAccountId, account_id: toAccountId, txn_type: 'Transfer In', amount, created_at: now },
+      { txn_id: Date.now(), account_id: fromAccountId, txn_type: 'Transfer Out', amount: -amount, created_at: now },
+      { txn_id: Date.now() + 1, account_id: toAccountId, txn_type: 'Transfer In', amount, created_at: now },
       ...prev,
     ]);
   };
@@ -163,15 +159,27 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 font-sans">
-      {/* 3. Pass username and onLogout into Header */}
       <Header username={username} onLogout={onLogout} />
 
       <main className="max-w-7xl mx-auto p-6 space-y-6">
-        <AccountsList
-          accounts={accounts}
-          onAddAccount={handleAddAccount}
-          onSelectAccount={setSelectedAccount}
-        />
+        {error && (
+          <div className="bg-red-100 border border-red-300 text-red-800 p-4 rounded-2xl text-xs">
+            {error}
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20 text-stone-500 text-sm font-semibold">
+            Loading accounts...
+          </div>
+        ) : (
+          <AccountsList
+            userId={userId}
+            accounts={accounts}
+            onAddAccount={handleAddAccount}
+            onSelectAccount={setSelectedAccount}
+          />
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <SpendingChart data={mockSpending} transactions={transactions} />
@@ -179,7 +187,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             cards={cards}
             accounts={accounts}
             onAddCard={handleIssueCard}
-        />
+          />
         </div>
       </main>
     </div>

@@ -52,8 +52,6 @@ class Transactions(BaseModel):
     amount: Decimal # should be decimal, fix this for precision
     created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
 
-
-
 """
 EXTRA BODY MODELS FOR API CALLS HERE
 """
@@ -61,3 +59,17 @@ EXTRA BODY MODELS FOR API CALLS HERE
 # BOTH FIELDS ARE REQUIRED.
 class AccountMoneyRequest(BaseModel):
     amount: Decimal
+
+"""
+CARDS MODEL
+"""
+# class Cards(BaseModel):
+#     id: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
+#     account_id: int
+#     cardHolder: str
+#     cardNumber: int
+#     expiry: Optional[datetime.date] = Field(default_factory=(datetime.now(timezone.utc) + timedelta(minutes=int(settings.EXPIRATION_TIME)))) # Datetime type
+#     type: str
+#     variant: str
+#     bgGradient: str
+#     pass

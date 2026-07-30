@@ -233,6 +233,19 @@ def get_transactions(id: int):
         #"transactions": transaction_list
     }
 
+# Add a new card to this user.
+@app.post("/api/users/{user_id}/cards/add")
+def add_card(user_id: int):
+    # found_card = card_service.
+
+    pass
+
+@app.get("/api/users/{user_id}/cards/{card_id}")
+def get_card(user_id: int):
+    # found_card = card_service.
+
+    pass
+
 #Use 8000/docs to view the API documentation.
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

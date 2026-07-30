@@ -212,8 +212,8 @@ def get_transactions(id: int):
     transaction_list = transaction_service.find_transactions(id)
 
     return {
-        "account_id": id
-        #"transactions": transaction_list
+        "account_id": id,
+        "transactions": transaction_list
     }
 
 #Use 8000/docs to view the API documentation.

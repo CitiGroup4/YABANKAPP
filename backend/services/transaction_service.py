@@ -4,6 +4,7 @@ from backend.services import account_service
 from datetime import datetime
 from decimal import Decimal
 from bson.decimal128 import Decimal128
+from utils.backend_utils import clean_transaction_records
 
 def find_transactions(account_id: int):
     # We should have an account ID by now. Use that, ask R/W layer to find latest transactions for this user.
@@ -12,21 +13,8 @@ def find_transactions(account_id: int):
     # List comprehension to get ALL transactions that match this ID.
     found_transactions = [x for x in transactions if x['account_id'] == account_id]
 
-    cleaned_transaction_list = []
-    for transaction in found_transactions:
-        # Remove '_id' section from each (this is MongoDB specific and we don't need it), return in list
-        transaction.pop("_id")
-
-        # Decimal128 does not serialize properly for JSON returns.
-        # You MUST run .to_decimal() to convert back to decimal beforehand, otherwise you cannot return this in the response.
-        transaction.update(
-            {
-                "amount": transaction.get("amount").to_decimal()
-            }
-        )
-
-        cleaned_transaction_list.append(transaction)
-
+    # Clean the records before returning (removing MongoDB specific information, other fields that need to be serialized).
+    cleaned_transaction_list = clean_transaction_records(found_transactions)
 
     return cleaned_transaction_list
 

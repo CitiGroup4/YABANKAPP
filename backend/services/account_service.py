@@ -2,6 +2,8 @@ from backend.repositories import account_repository
 from datetime import datetime
 from decimal import Decimal
 from bson.decimal128 import Decimal128
+from utils.backend_utils import clean_transaction_records
+
 
 
 def create_account(account):
@@ -24,6 +26,22 @@ def create_account(account):
 
     return account_repository.save_account(account_data)
 
+
+# Can return this as a response
+def get_account_serialized(account_id: int):
+    # Get the account by ID
+    found_account = account_repository.find_account_by_id(account_id)
+
+    # Clean account of "_id" and cast Decimal128 -> Decimal first to serialize properly.
+    found_account.pop("_id")
+    found_account.update(
+        {
+            "balance": found_account.get("balance").to_decimal()
+        }
+    )
+    return found_account
+
+# Cannot return this as a response (has Decimal128)
 def get_account(account_id: int):
     return account_repository.find_account_by_id(account_id)
 

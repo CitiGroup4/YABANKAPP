@@ -19,7 +19,7 @@ def find_transactions(account_id: int):
     return cleaned_transaction_list
 
 
-def create_transaction(user_id, transaction_amount: Decimal,note: str):
+def create_transaction(user_id, transaction_amount: Decimal, transaction_type: str):
     user_data = account_service.get_account(user_id)
 
     # Generate creation date
@@ -31,7 +31,7 @@ def create_transaction(user_id, transaction_amount: Decimal,note: str):
     new_transaction_data = {
         "txn_id": user_id,
         "account_id": user_data["account_id"],
-        "txn_type": user_data["account_type"],
+        "txn_type": transaction_type,
         "amount": Decimal128(transaction_amount),
         "created_at": created_date,
         "note": note
@@ -40,3 +40,23 @@ def create_transaction(user_id, transaction_amount: Decimal,note: str):
     print(f"\nTransaction record created with ID: {user_id}")
 
     transaction_repository.update_transaction_record(new_transaction_data)
+
+def find_user_transactions(user_id: int):
+    accounts = account_service.get_accounts_by_user(user_id)
+    if not accounts:
+        return []
+
+    # Extract all account IDs owned by this user
+    user_account_ids = {account["account_id"] for account in accounts}
+
+    all_raw_transactions = transaction_repository.get_all_transactions()
+
+    user_transactions = [
+        txn for txn in all_raw_transactions 
+        if txn.get("account_id") in user_account_ids
+    ]
+
+    # 4. Use your existing utility to convert Decimal128 -> Decimal and strip _id
+    cleaned_transactions = clean_transaction_records(user_transactions)
+
+    return cleaned_transactions

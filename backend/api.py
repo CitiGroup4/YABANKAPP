@@ -109,7 +109,8 @@ def deposit_money(id: int, account_request: models.AccountMoneyRequest):
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=True)
 
     # MongoDB call to create a record of this.
-    transaction_service.create_transaction(id, account_request.amount,note=account_request.note)
+    transaction_service.create_transaction(id, account_request.amount, "Deposit")
+
 
     if success == 0:
         return {
@@ -133,7 +134,8 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
     success = account_service.update_balance(account_id=id, amount=account_request.amount, deposit=False)
 
     # MongoDB call to create a record of this.
-    transaction_service.create_transaction(id, -account_request.amount, note=account_request.note)
+    transaction_service.create_transaction(id, -account_request.amount, "Withdraw")
+
 
     # NOTE: amount is negative here.
     if success == -1:
@@ -157,10 +159,10 @@ def withdraw_money(id: int, account_request: models.AccountMoneyRequest):
 def transfer_funds(sender_id: int, receiver_id: int, amount: Decimal):
     # call transfer function here
     account_service.transfer_funds(sender_id=sender_id, receiver_id=receiver_id, amount=amount)
-    
-    # MongoDB call to create a record of this for sender and receiver.
-    transaction_service.create_transaction(sender_id, -amount, note=f"Transfer to account {receiver_id}")
-    transaction_service.create_transaction(receiver_id, amount, note=f"Transfer from account {sender_id}")
+
+    transaction_service.create_transaction(sender_id, -amount, "Transfer to " + str(receiver_id)
+    transaction_service.create_transaction(receiver_id, amount, "Transfer from account " +  str(sender_id))
+
     return {
         "sender_account_id": sender_id,
         "receiver_account_id": receiver_id, 
@@ -266,6 +268,13 @@ def repay_loan(account_id: int, loan_id: int, amount: Decimal):
         "loan_id": loan_id,
         "message": "Loan repayment successful"
     }
+
+@app.get("/api/users/{user_id}/transactions")
+def get_transaction_history(user_id: int):
+    # call transaction history function here
+    transaction_list = transaction_service.find_user_transactions(user_id)
+
+    return transaction_list
 
 #Use 8000/docs to view the API documentation.
 if __name__ == "__main__":

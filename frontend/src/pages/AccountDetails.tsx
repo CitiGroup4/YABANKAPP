@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Account, Transaction, Card } from '../types/bank';
+import { getAccountTransactions } from '../api/accounts';
 
 interface AccountDetailsProps {
   account: Account;
   allAccounts: Account[];
-  transactions: Transaction[];
+  transactions?: Transaction[]; // Optional now as we fetch live transactions directly
   onBack: () => void;
-  onDeposit: (accountId: number, amount: number) => void;
-  onWithdraw: (accountId: number, amount: number) => void;
-  onTransfer: (fromAccountId: number, toAccountId: number, amount: number) => void;
+  onDeposit: (accountId: number, amount: number) => Promise<void> | void;
+  onWithdraw: (accountId: number, amount: number) => Promise<void> | void;
+  onTransfer: (fromAccountId: number, toAccountId: number, amount: number) => Promise<void> | void;
   onDeleteAccount: (accountId: number) => void;
   onIssueCard: (newCard: Card) => void;
 }
@@ -16,7 +17,6 @@ interface AccountDetailsProps {
 export const AccountDetails: React.FC<AccountDetailsProps> = ({
   account,
   allAccounts,
-  transactions,
   onBack,
   onDeposit,
   onWithdraw,
@@ -28,44 +28,80 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
     'deposit' | 'withdraw' | 'transfer' | 'newCard' | null
   >(null);
 
+  // Live transaction state from API
+  const [accountTransactions, setAccountTransactions] = useState<Transaction[]>([]);
+  const [isLoadingTxns, setIsLoadingTxns] = useState<boolean>(true);
+
   // Form states
   const [amount, setAmount] = useState<string>('');
+  
+  // Transfer-specific states
+  const [transferMode, setTransferMode] = useState<'internal' | 'external'>('internal');
   const [targetAccountId, setTargetAccountId] = useState<number>(
     allAccounts.find((a) => a.account_id !== account.account_id)?.account_id || 0
   );
+  const [customAccountId, setCustomAccountId] = useState<string>('');
+
+  // Card states
   const [cardType, setCardType] = useState<'Visa' | 'Mastercard' | 'Amex'>('Visa');
   const [cardVariant, setCardVariant] = useState<'credit' | 'debit'>('debit');
 
-  // Filter transactions belonging to this account
-  const accountTransactions = transactions.filter((t) => t.account_id === account.account_id);
+  // Fetch transactions from backend
+  const fetchTransactions = async () => {
+    try {
+      setIsLoadingTxns(true);
+      const data = await getAccountTransactions(account.account_id);
+      setAccountTransactions(data.transactions || []);
+    } catch (err) {
+      console.error('Failed to fetch transactions:', err);
+    } finally {
+      setIsLoadingTxns(false);
+    }
+  };
 
-  const handleDepositSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchTransactions();
+  }, [account.account_id]);
+
+  const handleDepositSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseFloat(amount);
     if (val > 0) {
-      onDeposit(account.account_id, val);
+      await onDeposit(account.account_id, val);
       setAmount('');
       setActiveModal(null);
+      await fetchTransactions(); // Refresh list after action
     }
   };
 
-  const handleWithdrawSubmit = (e: React.FormEvent) => {
+  const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseFloat(amount);
     if (val > 0 && val <= account.balance) {
-      onWithdraw(account.account_id, val);
+      await onWithdraw(account.account_id, val);
       setAmount('');
       setActiveModal(null);
+      await fetchTransactions(); // Refresh list after action
     }
   };
 
-  const handleTransferSubmit = (e: React.FormEvent) => {
+  const handleTransferSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseFloat(amount);
-    if (val > 0 && val <= account.balance && targetAccountId) {
-      onTransfer(account.account_id, targetAccountId, val);
+    
+    // Determine destination account ID based on selected mode
+    const destinationId = transferMode === 'internal' 
+      ? targetAccountId 
+      : parseInt(customAccountId, 10);
+
+    if (val > 0 && val <= account.balance && destinationId && destinationId !== account.account_id) {
+      await onTransfer(account.account_id, destinationId, val);
       setAmount('');
+      setCustomAccountId('');
       setActiveModal(null);
+      await fetchTransactions(); // Refresh list after action
+    } else if (destinationId === account.account_id) {
+      alert('Cannot transfer money to the same account.');
     }
   };
 
@@ -108,7 +144,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
         {/* Navigation Bar */}
         <button
           onClick={onBack}
-          className="flex items-center space-x-2 text-sm font-semibold text-amber-900 hover:text-amber-700 transition-colors bg-amber-200/50 hover:bg-amber-200 px-4 py-2 rounded-xl border border-amber-300/60 w-fit"
+          className="flex items-center space-x-2 text-sm font-semibold text-amber-900 hover:text-amber-700 transition-colors bg-amber-200/50 hover:bg-amber-200 px-4 py-2 rounded-xl border border-amber-300/60 w-fit cursor-pointer"
         >
           <span>← Back to Dashboard</span>
         </button>
@@ -137,7 +173,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <button
             onClick={() => setActiveModal('deposit')}
-            className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1"
+            className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1 cursor-pointer"
           >
             <span className="text-lg">💵</span>
             <span>Deposit</span>
@@ -145,7 +181,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
 
           <button
             onClick={() => setActiveModal('withdraw')}
-            className="bg-amber-700 hover:bg-amber-800 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1"
+            className="bg-amber-700 hover:bg-amber-800 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1 cursor-pointer"
           >
             <span className="text-lg">🏧</span>
             <span>Withdraw</span>
@@ -153,7 +189,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
 
           <button
             onClick={() => setActiveModal('transfer')}
-            className="bg-stone-800 hover:bg-stone-900 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1"
+            className="bg-stone-800 hover:bg-stone-900 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1 cursor-pointer"
           >
             <span className="text-lg">🔄</span>
             <span>Transfer</span>
@@ -161,7 +197,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
 
           <button
             onClick={() => setActiveModal('newCard')}
-            className="bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1"
+            className="bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1 cursor-pointer"
           >
             <span className="text-lg">💳</span>
             <span>Issue Card</span>
@@ -169,7 +205,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
 
           <button
             onClick={handleDelete}
-            className="col-span-2 sm:col-span-1 bg-rose-800 hover:bg-rose-900 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1"
+            className="col-span-2 sm:col-span-1 bg-rose-800 hover:bg-rose-900 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1 cursor-pointer"
           >
             <span className="text-lg">🗑️</span>
             <span>Delete Account</span>
@@ -185,7 +221,11 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
             </span>
           </div>
 
-          {accountTransactions.length === 0 ? (
+          {isLoadingTxns ? (
+            <div className="text-center py-8 text-amber-800/60 text-sm font-semibold">
+              Loading transactions...
+            </div>
+          ) : accountTransactions.length === 0 ? (
             <p className="text-sm text-amber-800/60 py-8 text-center italic">
               No transactions recorded for this account.
             </p>
@@ -201,9 +241,9 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-amber-200/40">
-                  {accountTransactions.map((txn, idx) => (
-                    <tr key={idx} className="hover:bg-amber-100/40 transition-colors">
-                      <td className="p-3 font-mono font-medium">{txn.txn_id}</td>
+                  {accountTransactions.map((txn) => (
+                    <tr key={txn.txn_id} className="hover:bg-amber-100/40 transition-colors">
+                      <td className="p-3 font-mono font-medium">#{txn.txn_id}</td>
                       <td className="p-3">
                         <span className="bg-amber-200/60 px-2 py-0.5 rounded font-semibold text-[10px]">
                           {txn.txn_type}
@@ -212,10 +252,12 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
                       <td className="p-3 text-amber-800/80 font-mono">{txn.created_at}</td>
                       <td
                         className={`p-3 text-right font-bold font-mono text-sm ${
-                          txn.amount >= 0 ? 'text-emerald-700' : 'text-rose-700'
+                          Number(txn.amount) >= 0 ? 'text-emerald-700' : 'text-rose-700'
                         }`}
                       >
-                        {txn.amount >= 0 ? `+$${txn.amount.toFixed(2)}` : `-$${Math.abs(txn.amount).toFixed(2)}`}
+                        {Number(txn.amount) >= 0
+                          ? `+$${Number(txn.amount).toFixed(2)}`
+                          : `-$${Math.abs(Number(txn.amount)).toFixed(2)}`}
                       </td>
                     </tr>
                   ))}
@@ -236,7 +278,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
               </h3>
               <button
                 onClick={() => setActiveModal(null)}
-                className="w-8 h-8 rounded-full bg-amber-200/60 text-amber-950 flex items-center justify-center hover:bg-amber-300 font-bold"
+                className="w-8 h-8 rounded-full bg-amber-200/60 text-amber-950 flex items-center justify-center hover:bg-amber-300 font-bold cursor-pointer"
               >
                 ✕
               </button>
@@ -264,7 +306,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs rounded-xl shadow-sm"
+                  className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs rounded-xl shadow-sm cursor-pointer"
                 >
                   Confirm {activeModal}
                 </button>
@@ -274,24 +316,73 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
             {/* Transfer Form */}
             {activeModal === 'transfer' && (
               <form onSubmit={handleTransferSubmit} className="space-y-4">
+                {/* Transfer Type Segmented Control */}
                 <div>
-                  <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
-                    Destination Account
+                  <label className="block text-xs font-semibold text-amber-900 uppercase mb-2">
+                    Transfer Destination Type
                   </label>
-                  <select
-                    value={targetAccountId}
-                    onChange={(e) => setTargetAccountId(Number(e.target.value))}
-                    className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium focus:ring-2 focus:ring-amber-500/50 outline-none"
-                  >
-                    {allAccounts
-                      .filter((a) => a.account_id !== account.account_id)
-                      .map((a) => (
-                        <option key={a.account_id} value={a.account_id}>
-                          Account #{a.account_id} ({a.account_type}) - ${a.balance.toFixed(2)}
-                        </option>
-                      ))}
-                  </select>
+                  <div className="grid grid-cols-2 gap-2 bg-amber-200/50 p-1 rounded-xl border border-amber-300/60">
+                    <button
+                      type="button"
+                      onClick={() => setTransferMode('internal')}
+                      className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                        transferMode === 'internal'
+                          ? 'bg-amber-800 text-white shadow-sm'
+                          : 'text-amber-950 hover:bg-amber-200/80'
+                      }`}
+                    >
+                      My Accounts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTransferMode('external')}
+                      className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                        transferMode === 'external'
+                          ? 'bg-amber-800 text-white shadow-sm'
+                          : 'text-amber-950 hover:bg-amber-200/80'
+                      }`}
+                    >
+                      External Account ID
+                    </button>
+                  </div>
                 </div>
+
+                {/* Conditional Destination Input */}
+                {transferMode === 'internal' ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
+                      Select Your Account
+                    </label>
+                    <select
+                      value={targetAccountId}
+                      onChange={(e) => setTargetAccountId(Number(e.target.value))}
+                      className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium focus:ring-2 focus:ring-amber-500/50 outline-none"
+                    >
+                      {allAccounts
+                        .filter((a) => a.account_id !== account.account_id)
+                        .map((a) => (
+                          <option key={a.account_id} value={a.account_id}>
+                            Account #{a.account_id} ({a.account_type}) - ${a.balance.toFixed(2)}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
+                      Target Account ID
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="e.g. 1024"
+                      value={customAccountId}
+                      onChange={(e) => setCustomAccountId(e.target.value)}
+                      className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium focus:ring-2 focus:ring-amber-500/50 outline-none font-mono"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
                     Transfer Amount ($)
@@ -306,9 +397,10 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
                     className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium focus:ring-2 focus:ring-amber-500/50 outline-none"
                   />
                 </div>
+
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs rounded-xl shadow-sm"
+                  className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs rounded-xl shadow-sm cursor-pointer"
                 >
                   Confirm Transfer
                 </button>
@@ -347,7 +439,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
                 </div>
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs rounded-xl shadow-sm"
+                  className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs rounded-xl shadow-sm cursor-pointer"
                 >
                   Issue Card Now
                 </button>

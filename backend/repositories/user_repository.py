@@ -1,4 +1,4 @@
-from database.mongodb import get_database
+from backend.database.mongodb import get_database
 from fastapi import HTTPException
 
 

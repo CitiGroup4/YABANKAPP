@@ -1,8 +1,8 @@
-from repositories import account_repository
+from backend.repositories import account_repository
 from datetime import datetime
 from decimal import Decimal
 from bson.decimal128 import Decimal128
-from utils.backend_utils import clean_transaction_records
+from backend.utils.backend_utils import clean_transaction_records
 
 def get_accounts_by_user(user_id: int):
     accounts = account_repository.find_accounts_by_user(user_id)

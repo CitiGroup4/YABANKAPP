@@ -1,4 +1,4 @@
-from database.mongodb import get_database
+from backend.database.mongodb import get_database
 from bson import ObjectId
 from decimal import Decimal
 from bson.decimal128 import Decimal128

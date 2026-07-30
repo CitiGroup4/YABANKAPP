@@ -1,6 +1,8 @@
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from services import user_service, account_service, transaction_service, loan_service
+
+from backend.models.models import CardQuery
+from services import user_service, account_service, transaction_service, loan_service, card_service
 from models import models
 from decimal import Decimal
 
@@ -294,15 +296,23 @@ def get_transaction_history(user_id: int):
 
 # Add a new card to this user.
 @app.post("/api/users/{user_id}/cards/add")
-def add_card(user_id: int):
-    # found_card = card_service.
-
+def add_card(card_detail: models.Cards):
+    try:
+        found_card_id = card_service.add_new_card(card_detail)
+        return {"Card creation time": found_card_id.generation_time.isoformat()}
+    except Exception as e:
+        return {"Error": "Card creation failure"}
     pass
 
-@app.get("/api/users/{user_id}/cards/{card_id}")
-def get_card(user_id: int):
+# Get cards for a user.
+@app.get("/api/accounts/{account_id}/cards")
+def get_cards_for_account(account_id: int):
     # found_card = card_service.
-
+    try:
+        found_cards = card_service.find_cards(account_id)
+        return {"Cards for this user": found_cards}
+    except Exception as e:
+        return {"Error": "Card creation failure"}
     pass
 
 #Use 8000/docs to view the API documentation.

@@ -1,9 +1,11 @@
 # import pydantic
 from typing import Optional
 from pydantic import BaseModel, Field
-import datetime
+# import datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
-from repositories.account_repository import get_next_account_id
+from backend.repositories.account_repository import get_next_account_id
+from backend.core.config import settings
 
 """
 user_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -35,7 +37,7 @@ class Accounts(BaseModel):
     user_id: int
     balance: Decimal = Field(default=0) # should be decimal, fix this for precision
     account_type: str = Field(max_length=50)
-    created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
+    created_at: Optional[date] = Field(default_factory=date.today) # Datetime type
 
 """
 CREATE TABLE transactions (
@@ -50,7 +52,7 @@ class Transactions(BaseModel):
     account_id: int
     txn_type: str = Field(max_length=20)
     amount: Decimal # should be decimal, fix this for precision
-    created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
+    created_at: Optional[date] = Field(default_factory=date.today) # Datetime type
 
 """
 EXTRA BODY MODELS FOR API CALLS HERE
@@ -76,13 +78,22 @@ class Loans(BaseModel):
 """
 CARDS MODEL
 """
-# class Cards(BaseModel):
-#     id: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
-#     account_id: int
-#     cardHolder: str
-#     cardNumber: int
-#     expiry: Optional[datetime.date] = Field(default_factory=(datetime.now(timezone.utc) + timedelta(minutes=int(settings.EXPIRATION_TIME)))) # Datetime type
-#     type: str
-#     variant: str
-#     bgGradient: str
-#     pass
+class Cards(BaseModel):
+    id: Optional[date] = Field(default_factory=date.today) # Datetime type
+    account_id: int
+    cardHolder: str
+    cardNumber: int # PASSED IN FROM FRONTEND
+    expiry: Optional[date] = Field(default_factory=
+                                            (datetime.now() + timedelta(minutes=int(settings.EXPIRATION_TIME))).date
+                                            ) # Datetime type
+    type: str
+    variant: str
+    bgGradient: str
+    status: str
+    spendingLimit: Decimal
+    pass
+
+class CardQuery(BaseModel):
+    account_id: int
+    cardHolder: str
+    cardNumber: int

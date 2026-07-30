@@ -126,10 +126,10 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleIssueCard = (newCard: Card) => {
-    setCards((prev) => [newCard, ...prev]);
+    setCards((prev) => [...prev, newCard]);
   };
 
-  // If an account is selected, render Account Details page view
+  // Render Account Details Page
   if (selectedAccount) {
     const activeAccount = accounts.find((a) => a.account_id === selectedAccount.account_id);
     if (!activeAccount) {
@@ -164,8 +164,12 @@ export const Dashboard: React.FC = () => {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SpendingChart data={mockSpending} />
-          <CardsGallery cards={cards} />
+          <SpendingChart data={mockSpending} transactions={transactions} />
+          <CardsGallery
+            cards={cards}
+            accounts={accounts}
+            onAddCard={handleIssueCard}
+          />
         </div>
       </main>
     </div>

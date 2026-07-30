@@ -23,6 +23,8 @@ export interface Card {
   type: 'Visa' | 'Mastercard' | 'Amex';
   variant: 'credit' | 'debit';
   bgGradient: string;
+  status?: 'active' | 'frozen';
+  spendingLimit?: number;
 }
 
 export interface SpendingData {

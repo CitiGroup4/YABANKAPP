@@ -1,7 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, HTTPException
 
-from backend.models.models import CardQuery
 from services import user_service, account_service, transaction_service, loan_service, card_service
 from models import models
 from decimal import Decimal

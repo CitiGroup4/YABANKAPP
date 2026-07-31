@@ -1,0 +1,10 @@
+[Unit]
+Description=YABANKAPP backend service
+
+[Service]
+WorkingDirectory=/home/ubuntu/YABANKAPP/backend
+ExecStart=/home/ubuntu/YABANKAPP/.venv/bin/python /home/ubuntu/YABANKAPP/backend/api.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

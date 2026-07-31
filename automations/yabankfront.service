@@ -1,0 +1,11 @@
+[Unit]
+Description=YABANKAPP frontend service
+
+[Service]
+WorkingDirectory=/home/ubuntu/YABANKAPP/frontend
+ExecStartPre=cd /home/ubuntu/YABANKAPP/frontend
+ExecStart=npm run dev
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

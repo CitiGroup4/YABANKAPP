@@ -75,16 +75,28 @@ jobs:
             npm -v
             sudo apt install python3 -y
             sudo apt install python3-pip python3-venv -y
+            sudo npm install -g pm2
           SCRIPT_AFTER: |
             whoami
             ls -al
-            cd "/home/${{ secrets.EC2_USER }}/YABANKAPP/frontend"
-            npm install
-            npm run dev
+            
+            cd "/home/${{ secrets.EC2_USER }}/YABANKAPP
+            python3 -m venv .venv
+            source .venv/bin/activate
             cd "/home/${{ secrets.EC2_USER }}/YABANKAPP/backend"
             python -m pip install --upgrade pip
             pip install -r requirements.txt
-            python3 api.py
+            
+            sudo cp yabankback.service /etc/systemd/system/yabankback.service
+            sudo systemctl daemon-reload
+            sudo systemctl enable yabankback.service
+            sudo systemctl start yabankback.service
+            sudo systemctl status yabankback.service
+
+            pm2 start npm --name "/home/ubuntu/YABANKAPP/frontend" -- run dev
+            pm2 startup
+            pm2 save
+            
             echo $RSYNC_STDOUT
 
       # - name: Install npm dependencies for project

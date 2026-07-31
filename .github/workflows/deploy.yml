@@ -60,7 +60,9 @@ jobs:
             sudo systemctl enable yabankback.service
             sudo systemctl start yabankback.service
             sudo systemctl status yabankback.service
-
+            
+            cd "/home/${{ secrets.EC2_USER }}/YABANKAPP/frontend"
+            npm install
             pm2 start npm --name "/home/ubuntu/YABANKAPP/frontend" -- run dev
             pm2 startup
             pm2 save

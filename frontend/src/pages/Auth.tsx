@@ -90,7 +90,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-orange-200/40 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-md bg-gradient-to-b from-orange-50/90 to-amber-50/50 backdrop-blur-xl border border-amber-200/80 rounded-3xl p-6 sm:p-8 space-y-6">
-        
+
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="w-14 h-14 bg-gradient-to-br from-amber-700 to-amber-900 text-amber-50 font-bold text-xl rounded-2xl flex items-center justify-center mx-auto mb-3 border border-amber-600/30">

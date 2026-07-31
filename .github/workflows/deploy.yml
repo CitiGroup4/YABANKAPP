@@ -48,7 +48,7 @@ jobs:
             whoami
             ls -al
             
-            cd "/home/${{ secrets.EC2_USER }}/YABANKAPP
+            cd "/home/${{ secrets.EC2_USER }}/YABANKAPP"
             python3 -m venv .venv
             source .venv/bin/activate
             cd "/home/${{ secrets.EC2_USER }}/YABANKAPP/backend"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Account, Transaction, Card } from '../types/bank';
 import { getAccountTransactions } from '../api/accounts';
+import { addCard } from '../api/cards';
 
 interface AccountDetailsProps {
   account: Account;
@@ -34,7 +35,7 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
 
   // Form states
   const [amount, setAmount] = useState<string>('');
-  
+
   // Transfer-specific states
   const [transferMode, setTransferMode] = useState<'internal' | 'external'>('internal');
   const [targetAccountId, setTargetAccountId] = useState<number>(
@@ -43,8 +44,11 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
   const [customAccountId, setCustomAccountId] = useState<string>('');
 
   // Card states
-  const [cardType, setCardType] = useState<'Visa' | 'Mastercard' | 'Amex'>('Visa');
-  const [cardVariant, setCardVariant] = useState<'credit' | 'debit'>('debit');
+  const [cardHolder, setCardHolder] = useState<string>('John');
+  const [cardType, setCardType] = useState<string>('Visa');
+  const [cardVariant, setCardVariant] = useState<string>('credit');
+  const [isIssuingCard, setIsIssuingCard] = useState<boolean>(false);
+  const [cardError, setCardError] = useState<string | null>(null);
 
   // Fetch transactions from backend
   const fetchTransactions = async () => {
@@ -105,30 +109,31 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
     }
   };
 
-  const handleIssueCardSubmit = (e: React.FormEvent) => {
+  const handleIssueCardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const gradients = [
-      'bg-gradient-to-br from-amber-800 via-orange-900 to-stone-900',
-      'bg-gradient-to-br from-stone-800 via-amber-900 to-amber-950',
-      'bg-gradient-to-br from-amber-700 via-yellow-900 to-stone-950',
-      'bg-gradient-to-br from-rose-950 via-amber-950 to-stone-900',
-    ];
+    setIsIssuingCard(true);
+    setCardError(null);
 
-    const randomCardNum = `4${Math.floor(100000000050000 + Math.random() * 899999999950000)}`;
-
-    const newCard: Card = {
-      id: `c_${Date.now()}`,
+    const payload = {
+      user_id: account.user_id,
       account_id: account.account_id,
-      cardHolder: 'Alex Morgan',
-      cardNumber: randomCardNum,
-      expiry: '12/29',
+      cardHolder: cardHolder.trim() || 'John',
       type: cardType,
       variant: cardVariant,
-      bgGradient: gradients[Math.floor(Math.random() * gradients.length)],
+      status: 'active',
+      spendingLimit: 5000,
     };
 
-    onIssueCard(newCard);
-    setActiveModal(null);
+    try {
+      const issuedCard = await addCard(account.user_id, payload);
+      onIssueCard(issuedCard);
+      setActiveModal(null);
+    } catch (err: any) {
+      console.error('Failed to issue card:', err);
+      setCardError(err.message || 'Failed to issue card. Please try again.');
+    } finally {
+      setIsIssuingCard(false);
+    }
   };
 
   const handleDelete = () => {
@@ -196,7 +201,10 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveModal('newCard')}
+            onClick={() => {
+              setCardError(null);
+              setActiveModal('newCard');
+            }}
             className="bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center space-y-1 cursor-pointer"
           >
             <span className="text-lg">💳</span>
@@ -410,13 +418,32 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
             {/* New Card Form */}
             {activeModal === 'newCard' && (
               <form onSubmit={handleIssueCardSubmit} className="space-y-4">
+                {cardError && (
+                  <div className="bg-red-100 text-red-800 p-2.5 text-xs rounded-xl border border-red-300">
+                    {cardError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
+                    Cardholder Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={cardHolder}
+                    onChange={(e) => setCardHolder(e.target.value)}
+                    className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium outline-none focus:ring-2 focus:ring-amber-500/50"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
                     Card Type
                   </label>
                   <select
                     value={cardType}
-                    onChange={(e) => setCardType(e.target.value as any)}
+                    onChange={(e) => setCardType(e.target.value)}
                     className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium outline-none"
                   >
                     <option value="Visa">Visa</option>
@@ -424,24 +451,27 @@ export const AccountDetails: React.FC<AccountDetailsProps> = ({
                     <option value="Amex">Amex</option>
                   </select>
                 </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-amber-900 uppercase mb-1">
                     Card Variant
                   </label>
                   <select
                     value={cardVariant}
-                    onChange={(e) => setCardVariant(e.target.value as any)}
+                    onChange={(e) => setCardVariant(e.target.value)}
                     className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2.5 text-amber-950 text-sm font-medium outline-none"
                   >
-                    <option value="debit">Debit</option>
                     <option value="credit">Credit</option>
+                    <option value="debit">Debit</option>
                   </select>
                 </div>
+
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs rounded-xl shadow-sm cursor-pointer"
+                  disabled={isIssuingCard}
+                  className="w-full py-2.5 bg-amber-800 hover:bg-amber-900 text-white font-semibold text-xs rounded-xl shadow-sm cursor-pointer disabled:opacity-50"
                 >
-                  Issue Card Now
+                  {isIssuingCard ? 'Issuing Card...' : 'Issue Card Now'}
                 </button>
               </form>
             )}

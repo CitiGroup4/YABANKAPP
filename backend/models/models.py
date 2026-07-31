@@ -1,9 +1,12 @@
 # import pydantic
 from typing import Optional
+import random
 from pydantic import BaseModel, Field
-import datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from repositories.account_repository import get_next_account_id
+from core.config import settings
+from dateutil.relativedelta import relativedelta
 
 """
 user_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -32,7 +35,7 @@ class Accounts(BaseModel):
     user_id: int
     balance: Decimal = Field(default=0) # should be decimal, fix this for precision
     account_type: str = Field(max_length=50)
-    created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
+    created_at: Optional[date] = Field(default_factory=date.today) # Datetime type
 
 """
 CREATE TABLE transactions (
@@ -47,7 +50,7 @@ class Transactions(BaseModel):
     account_id: int
     txn_type: str = Field(max_length=20)
     amount: Decimal # should be decimal, fix this for precision
-    created_at: Optional[datetime.date] = Field(default_factory=datetime.date.today) # Datetime type
+    created_at: Optional[date] = Field(default_factory=date.today) # Datetime type
 
 
 
@@ -60,7 +63,25 @@ class AccountMoneyRequest(BaseModel):
     amount: Decimal
     note: Optional[str]  # Optional note field for additional information
 
+class Cards(BaseModel):
+    id: Optional[date] = Field(default_factory=date.today) # Datetime type
+    user_id: int
+    account_id: int
+    cardHolder: str
+    cardNumber: int = Field(default_factory=lambda: random.randint(1000000000000000, 9999999999999999))
+    expiry: date = Field(
+        default_factory=lambda: (datetime.now() + relativedelta(months=60)).date()
+    )
+    type: str
+    variant: str
+    status: str
+    spendingLimit: Decimal
 
+
+class CardQuery(BaseModel):
+    account_id: int
+    cardHolder: str
+    cardNumber: int
 
 """
 Loan Model
@@ -79,6 +100,3 @@ class Loans(BaseModel):
 
 
 
-   
-
-    

@@ -15,7 +15,7 @@ import {
 } from '../api/accounts';
 
 interface DashboardProps {
-  userId?: number;
+  userId: number; // Removed default hardcoded fallback requirement
   username?: string;
   onLogout?: () => void;
 }
@@ -23,7 +23,7 @@ interface DashboardProps {
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export const Dashboard: React.FC<DashboardProps> = ({
-  userId = 2,
+  userId,
   username = 'User',
   onLogout,
 }) => {
@@ -37,6 +37,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Fetch accounts and user transaction history
   const fetchData = async () => {
+    if (!userId) return;
     try {
       setIsLoading(true);
       setError(null);
@@ -217,8 +218,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             transactions={transactions} 
           />
           <CardsGallery
-            cards={cards}
+            userId={userId}
             accounts={accounts}
+            cards={cards}
             onAddCard={handleIssueCard}
           />
         </div>

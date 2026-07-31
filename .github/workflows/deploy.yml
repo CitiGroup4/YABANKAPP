@@ -1,0 +1,101 @@
+name: Deploy full-stack to EC2 instance
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js on action runner instance
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26.5' # Specify your preferred Node version
+          cache: 'npm'         # Automatically caches npm dependencies
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript application
+        run: npm run build
+          
+      - name: Setup Python on action runner instance
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+        
+      # - name: Run setup on EC2 instance
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     script: |
+      #       # Setup npm and python
+      #       sudo apt update && sudo apt upgrade -y
+      #       sudo apt install nodejs npm -y
+      #       node -v
+      #       npm -v
+      #       sudo apt install python3 -y
+      #       sudo apt install python3-pip python3-venv -y
+
+      #       # Get into directory we want to clone this repo.
+            
+      #       cd /var/www/YABANKAPP
+
+
+      - name: Install npm dependencies
+        run: npm install
+        
+      - name: Run build task
+        run: npm run build --if-present
+
+      - name: Deploy to EC2 instance
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "dist/"
+          REMOTE_HOST: "ec2-100-48-97-208.compute-1.amazonaws.com"
+          REMOTE_USER: ${{ secrets.EC2_USER }}
+          TARGET: "/home/${{ secrets.EC2_USER }}/YABANKAPP"
+          SCRIPT_BEFORE: |
+            whoami
+            ls -al
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install nodejs npm -y
+            node -v
+            npm -v
+            sudo apt install python3 -y
+            sudo apt install python3-pip python3-venv -y
+          SCRIPT_AFTER: |
+            whoami
+            ls -al
+            cd "/home/${{ secrets.EC2_USER }}/YABANKAPP/frontend"
+            npm install
+            npm run dev
+            cd "/home/${{ secrets.EC2_USER }}/YABANKAPP/backend"
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+            python3 api.py
+            echo $RSYNC_STDOUT
+
+      # - name: Install npm dependencies for project
+      #   run: |
+      #     cd frontend
+      #     npm install
+      
+      # - name: Install python dependencies for project
+      #   run: |
+      #     cd ..
+      #     python -m pip install --upgrade pip
+      #     pip install -r requirements.txt
+
+      

@@ -19,43 +19,11 @@ jobs:
         with:
           node-version: '26.5' # Specify your preferred Node version
           # cache: 'npm'         # Automatically caches npm dependencies
-
-      # - name: Install dependencies
-      #   run: npm ci
-
-      # - name: Build TypeScript application
-      #   run: npm run build
           
       - name: Setup Python on action runner instance
         uses: actions/setup-python@v5
         with:
           python-version: "3.14"
-        
-      # - name: Run setup on EC2 instance
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.EC2_HOST }}
-      #     username: ${{ secrets.EC2_USER }}
-      #     key: ${{ secrets.EC2_SSH_KEY }}
-      #     script: |
-      #       # Setup npm and python
-      #       sudo apt update && sudo apt upgrade -y
-      #       sudo apt install nodejs npm -y
-      #       node -v
-      #       npm -v
-      #       sudo apt install python3 -y
-      #       sudo apt install python3-pip python3-venv -y
-
-      #       # Get into directory we want to clone this repo.
-            
-      #       cd /var/www/YABANKAPP
-
-
-      # - name: Install npm dependencies
-      #   run: npm install
-        
-      # - name: Run build task
-      #   run: npm run build --if-present
 
       - name: Deploy to EC2 instance
         uses: easingthemes/ssh-deploy@main
@@ -75,7 +43,7 @@ jobs:
             npm -v
             sudo apt install python3 -y
             sudo apt install python3-pip python3-venv -y
-            sudo npm install -g pm2
+            sudo npm install -g pm2 -y
           SCRIPT_AFTER: |
             whoami
             ls -al
@@ -98,16 +66,4 @@ jobs:
             pm2 save
             
             echo $RSYNC_STDOUT
-
-      # - name: Install npm dependencies for project
-      #   run: |
-      #     cd frontend
-      #     npm install
-      
-      # - name: Install python dependencies for project
-      #   run: |
-      #     cd ..
-      #     python -m pip install --upgrade pip
-      #     pip install -r requirements.txt
-
       

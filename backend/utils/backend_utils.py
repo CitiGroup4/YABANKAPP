@@ -40,3 +40,43 @@ def clean_transaction_records(records: dict | list):
         return cleaned_transaction_list
 
     return None
+
+
+def clean_card_records(records: dict | list):
+    # Make sure this is a dict or list, otherwise throw error
+    assert(isinstance(records, dict | list))
+
+    # If we have one record, clean and return single.
+    if isinstance(records, dict):
+        # Remove '_id' section from each (this is MongoDB specific and we don't need it).
+        records.pop("_id")
+
+        # Decimal128 does not serialize properly for JSON returns.
+        # You MUST run .to_decimal() to convert back to decimal beforehand, otherwise you cannot return this in the response.
+        records.update(
+            {
+                "spendingLimit": records.get("spendingLimit").to_decimal()
+            }
+        )
+        return records
+
+
+    # If we have a list of cards rather than a single, clean the whole list.
+    if isinstance(records, list):
+        cleaned_card_list = []
+        for card in records:
+            # Remove '_id' section from each (this is MongoDB specific and we don't need it), return in list
+            card.pop("_id")
+
+            # Decimal128 does not serialize properly for JSON returns.
+            # You MUST run .to_decimal() to convert back to decimal beforehand, otherwise you cannot return this in the response.
+            card.update(
+                {
+                    "spendingLimit": card.get("spendingLimit").to_decimal()
+                }
+            )
+
+            cleaned_card_list.append(card)
+        return cleaned_card_list
+
+    return None

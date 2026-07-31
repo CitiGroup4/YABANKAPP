@@ -15,19 +15,20 @@ export interface Transaction {
 }
 
 export interface Card {
-  id: string;
+  id: string; // ISO datetime string from backend
+  user_id?: number;
   account_id: number;
   cardHolder: string;
-  cardNumber: string;
+  cardNumber: number | string;
   expiry: string;
-  type: 'Visa' | 'Mastercard' | 'Amex';
-  variant: 'credit' | 'debit';
-  bgGradient: string;
-  status?: 'active' | 'frozen';
-  spendingLimit?: number;
+  type: string;
+  variant: string;
+  status: string;
+  spendingLimit: number;
+  bgGradient?: string;
 }
-
 export interface SpendingData {
   month: string;
   amount: number;
 }
+

@@ -224,6 +224,142 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Login and generate token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"email\": \"john@gmail.com\",\r\n    \"password\": \"mypassword123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8000/api/login",
+          "protocol": "http",
+          "host": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Test token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UiLCJlbWFpbCI6ImpvaG5AZ21haWwuY29tIiwidGltZXN0YW1wIjoiMjAyNi0wNy0zMCAwMzo1Nzo1Ni4yNDMyNDcrMDA6MDAifQ.ZrRztpB-0AdFBjBcU3CxHpFqCtPJFAHi3LIsd8Htyoc\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8000/api/tokentest",
+          "protocol": "http",
+          "host": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "tokentest"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add a card",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"account_id\": 102,\r\n    \"cardHolder\": \"John\",\r\n    \"cardNumber\": 453209871234,\r\n    \"type\": \"Visa\",\r\n    \"variant\": \"credit\",\r\n    \"bgGradient\": \"bg-gradient-to-br from-amber-800 via-orange-900 to-stone-900\",\r\n    \"status\": \"active\",\r\n    \"spendingLimit\": 5000\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8000/api/users/102/cards/add",
+          "protocol": "http",
+          "host": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "users",
+            "102",
+            "cards",
+            "add"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get all cards",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8000/api/accounts/102/cards",
+          "protocol": "http",
+          "host": [
+            "0",
+            "0",
+            "0",
+            "0"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "accounts",
+            "102",
+            "cards"
+          ]
+        }
+      },
+      "response": []
     }
   ]
 }

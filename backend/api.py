@@ -5,12 +5,10 @@ from fastapi import FastAPI, HTTPException
 import csv
 from datetime import datetime
 import copy
-from services import user_service, account_service, transaction_service, loan_service 
+from services import user_service, account_service, transaction_service, loan_service , card_service
 from models import models
 from decimal import Decimal
-
 from database.mongodb import client, close_database
-
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -275,6 +273,31 @@ def get_transaction_history(user_id: int):
     transaction_list = transaction_service.find_user_transactions(user_id)
 
     return transaction_list
+
+# Add a new card to this user.
+@app.post("/api/users/{user_id}/cards/add")
+def add_card(card_detail: models.Cards):
+    try:
+        found_card_id = card_service.add_new_card(card_detail)
+        return {"Card creation time": found_card_id.generation_time.isoformat()}
+    except Exception as e:
+        return {"Error": "Card creation failure"}
+
+@app.get("/api/accounts/{account_id}/cards")
+def get_cards_for_account(account_id: int):
+    try:
+        found_cards = card_service.find_cards(account_id)
+        return {"Cards for this user": found_cards}
+    except Exception as e:
+        return {"Error": "Card creation failure"}
+
+@app.get("/api/accounts/{account_id}/cards")
+def get_cards_for_account(account_id: int):
+    try:
+        found_cards = card_service.find_cards(account_id)
+        return {"Cards for this user": found_cards}
+    except Exception as e:
+        return {"Error": "Card creation failure"}
 
 #Use 8000/docs to view the API documentation.
 if __name__ == "__main__":

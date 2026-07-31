@@ -62,10 +62,10 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           ARGS: "-rlgoDzvc -i --delete"
-          SOURCE: "dist/"
-          REMOTE_HOST: "ec2-100-48-97-208.compute-1.amazonaws.com"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.EC2_HOST }}
           REMOTE_USER: ${{ secrets.EC2_USER }}
-          TARGET: "/home/${{ secrets.EC2_USER }}"
+          TARGET: "/home/${{ secrets.EC2_USER }}/YABANKAPP"
           SCRIPT_BEFORE: |
             whoami
             ls -al

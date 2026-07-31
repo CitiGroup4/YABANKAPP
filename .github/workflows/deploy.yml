@@ -20,11 +20,11 @@ jobs:
           node-version: '26.5' # Specify your preferred Node version
           # cache: 'npm'         # Automatically caches npm dependencies
 
-      - name: Install dependencies
-        run: npm ci
+      # - name: Install dependencies
+      #   run: npm ci
 
-      - name: Build TypeScript application
-        run: npm run build
+      # - name: Build TypeScript application
+      #   run: npm run build
           
       - name: Setup Python on action runner instance
         uses: actions/setup-python@v5

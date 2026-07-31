@@ -44,6 +44,8 @@ jobs:
             sudo apt install python3 -y
             sudo apt install python3-pip python3-venv -y
             sudo npm install -g pm2 -y
+            
+            sudo rm -rf "/home/${{ secrets.EC2_USER }}/YABANKAPP"
           SCRIPT_AFTER: |
             whoami
             ls -al

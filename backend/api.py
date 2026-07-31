@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 import csv
 from datetime import datetime
 import copy
+from mangum import Mangum
 from services import user_service, account_service, transaction_service, loan_service , card_service
 from models import models
 from decimal import Decimal
@@ -300,5 +301,10 @@ def get_cards_for_account(account_id: int):
         return {"Error": "Card creation failure"}
 
 #Use 8000/docs to view the API documentation.
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+handler = Mangum(app)
+
+# def handler():
+# # if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=8000)

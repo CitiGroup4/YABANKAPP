@@ -57,6 +57,10 @@ jobs:
             python -m pip install --upgrade pip
             pip install -r requirements.txt
             
+            sudo tee "/home/${{ secrets.EC2_USER }}/YABANKAPP/backend" > /dev/null <<'EOF'
+            ${{ secrets.ENV }}
+            EOF
+            
             sudo cp yabankback.service /etc/systemd/system/yabankback.service
             sudo systemctl daemon-reload
             sudo systemctl enable yabankback.service
